@@ -64,22 +64,13 @@ impl Semigroup for f64 {
 }
 
 macro_rules! semigroup_impl {
-    ($type:ty) => {
+    ($($type:ty),*) => {$(
         impl Semigroup for $type {
             fn combine(self, x: $type) -> $type {
                 self.wrapping_add(x)
             }
         }
-    };
+    )*};
 }
 
-semigroup_impl!(i8);
-semigroup_impl!(i16);
-semigroup_impl!(i32);
-semigroup_impl!(i64);
-semigroup_impl!(isize);
-semigroup_impl!(u8);
-semigroup_impl!(u16);
-semigroup_impl!(u32);
-semigroup_impl!(u64);
-semigroup_impl!(usize);
+semigroup_impl!(i8, i16, i32, i64, isize, u8, u16, u32, u64, usize);

@@ -1,2 +1,2 @@
-mod monoid;
-mod semigroup;
+pub mod monoid;
+pub mod semigroup;

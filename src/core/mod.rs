@@ -1,1 +1,1 @@
-mod functor;
+pub mod functor;
