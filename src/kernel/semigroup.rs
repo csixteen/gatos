@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
 pub trait Semigroup {
@@ -24,6 +24,13 @@ impl<T> Semigroup for Vec<T> {
 }
 
 impl<T: Eq + Hash> Semigroup for HashSet<T> {
+    fn combine(mut self, x: Self) -> Self {
+        self.extend(x);
+        self
+    }
+}
+
+impl<K: Eq + Hash, V> Semigroup for HashMap<K, V> {
     fn combine(mut self, x: Self) -> Self {
         self.extend(x);
         self
