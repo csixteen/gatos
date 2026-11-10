@@ -4,13 +4,13 @@ use crate::kernel::monoid::Monoid;
 ///
 /// `combine(self, inverse(self))` = `combine(inverse(self), self)` = `empty`
 pub trait Group: Monoid {
-    fn inverse(self) -> Self;
+    fn inverse(value: Self) -> Self;
 
-    /// Removes `b` from `self`. Equivalent to `combine(self, inverse(b))`.
-    fn remove(self, b: Self) -> Self
+    /// Removes `right` from `left`. Equivalent to `combine(left, inverse(right))`.
+    fn remove(left: Self, right: Self) -> Self
     where
         Self: Sized,
     {
-        self.combine(b.inverse())
+        Self::combine(left, Self::inverse(right))
     }
 }
