@@ -1,3 +1,5 @@
+/// "Type class" for functors that define `imap`, which transforms an `F[A]` into an `F[B]`,
+/// given two transformations, one from `A` to `B` and another from `B` to `A`.
 pub trait Invariant {
     type Inner;
     type Out<B>;
@@ -9,8 +11,6 @@ pub trait Invariant {
 }
 
 #[cfg(test)]
-// We don't actually need to run the tests
-#[allow(unused)]
 mod tests {
     use super::*;
 
@@ -28,5 +28,13 @@ mod tests {
         {
             TestContainer(f(self.0))
         }
+    }
+
+    #[test]
+    fn test_container_invariant() {
+        let original = TestContainer(5_i32);
+        let transformed =
+            original.imap(|x| x.to_string(), |y| y.parse::<i32>().unwrap_or_default());
+        assert_eq!(transformed.0, "5");
     }
 }
