@@ -3,7 +3,7 @@ use crate::core::functor::Functor;
 pub trait Apply: Functor {
     /// This is the equivalent of Haskell's `<*>`, whose signature is:
     ///
-    /// ```
+    /// ```text
     /// (<*>) :: f (a -> b) -> f a -> f b
     /// ```
     ///
