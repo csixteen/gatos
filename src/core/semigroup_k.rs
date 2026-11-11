@@ -1,3 +1,5 @@
+use crate::kernel::semigroup::Semigroup;
+
 /// Similar to [`Semigroup`], with the difference that it operates on kinds,
 /// i.e., on type constructors. It only operates on type constructors with one parameter
 /// (the equivalent of Scala's `F[_]`). Because of that, we can find [`Semigroup`] implementation
@@ -5,12 +7,32 @@
 /// type constructors, such as `Option<T>`.
 ///
 /// [`Semigroup`]: crate::kernel::semigroup::Semigroup
-pub trait SemigroupK {
+pub trait SemigroupK: Sized {
     type Inner;
     type Out<B>;
 
     /// Combines two `F[_]`.
     fn combine_k(self, b: Self) -> Self;
+
+    // Notes for self:
+    //
+    // In Scala Cats, `SemigroupK[F].algebra[A]` converts `F[A]` into a standard `Semigroup[F[A]]`.
+    // In Rust, a blanket implementation of `impl<F: SemigroupK> Semigroup for F {}` would conflict
+    // with concret `Semigroup` implementations, e.g., `Option<T>` where `T: Semigroup`. As a
+    // workaround, we can use `Algebra<T>`, which wraps `Self`, and implements `Semigroup` by
+    // delegating `combine` to `combine_k`.
+    fn algebra(self) -> Algebra<Self> {
+        Algebra(self)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Algebra<T>(pub T);
+
+impl<T: SemigroupK> Semigroup for Algebra<T> {
+    fn combine(self, right: Self) -> Self {
+        Algebra(self.0.combine_k(right.0))
+    }
 }
 
 #[cfg(test)]
