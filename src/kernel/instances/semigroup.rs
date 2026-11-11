@@ -43,7 +43,10 @@ where
     }
 }
 
-impl<T: Semigroup> Semigroup for Option<T> {
+impl<T: Semigroup> Semigroup for Option<T>
+where
+    T: Semigroup,
+{
     fn combine(self, right: Self) -> Self {
         match (self, right) {
             (None, None) => None,
@@ -54,7 +57,10 @@ impl<T: Semigroup> Semigroup for Option<T> {
     }
 }
 
-impl<T: Semigroup, E> Semigroup for Result<T, E> {
+impl<T: Semigroup, E> Semigroup for Result<T, E>
+where
+    T: Semigroup,
+{
     fn combine(self, right: Self) -> Self {
         match (self, right) {
             (_, b @ Err(_)) => b,
@@ -86,4 +92,6 @@ macro_rules! semigroup_impl {
     )*};
 }
 
-semigroup_impl!(i8, i16, i32, i64, isize, u8, u16, u32, u64, usize);
+semigroup_impl!(
+    i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize
+);

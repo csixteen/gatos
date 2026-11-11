@@ -1,4 +1,6 @@
-use crate::core::{functor::Functor, invariant::Invariant, semigroupal::Semigroupal};
+use crate::core::{
+    functor::Functor, invariant::Invariant, semigroup_k::SemigroupK, semigroupal::Semigroupal,
+};
 
 impl<T> Invariant for Option<T> {
     type Inner = T;
@@ -47,6 +49,17 @@ impl<T> Semigroupal for Option<T> {
             (Some(t), Some(b)) => Some((t, b)),
             _ => None,
         }
+    }
+}
+
+impl<T> SemigroupK for Option<T> {
+    type Inner = T;
+    type Out<B> = Option<B>;
+
+    fn combine_k(self, b: Self) -> Self {
+        // The inner type `T` of `Option<T>` is not fully specified and can be anything,
+        // therefor we don't know how to combine them, so we just use `Option::or()`.
+        self.or(b)
     }
 }
 
