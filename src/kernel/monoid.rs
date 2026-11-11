@@ -10,11 +10,11 @@ pub trait Monoid: Semigroup {
 mod laws {
     use std::fmt::Debug;
 
-    use proptest::prelude::*;
+    use proptest::{prelude::*, test_runner::TestCaseResult};
 
     use super::*;
 
-    fn assert_monoid_laws<T>(a: T) -> Result<(), TestCaseError>
+    fn assert_monoid_laws<T>(a: T) -> TestCaseResult
     where
         T: Monoid + Clone + PartialEq + Debug,
     {

@@ -16,7 +16,7 @@ mod tests {
     #[test]
     fn test_monoid_default() {
         assert_eq!(0, u32::empty());
-        assert_eq!(Vec::<u32>::new(), Vec::<_>::empty());
+        assert_eq!(Vec::<u32>::new(), Vec::empty());
         assert_eq!(String::new(), String::empty());
         assert_eq!(None, Option::<u32>::empty());
     }
