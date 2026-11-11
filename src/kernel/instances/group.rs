@@ -6,8 +6,8 @@ impl<T> Group for T
 where
     T: Monoid + Neg<Output = Self>,
 {
-    fn inverse(value: Self) -> Self {
-        value.neg()
+    fn inverse(self) -> Self {
+        self.neg()
     }
 }
 
@@ -17,11 +17,11 @@ mod tests {
 
     #[test]
     fn test_negative_ints() {
-        assert_eq!(-5_i32, Group::inverse(5_i32));
+        assert_eq!(-5_i32, 5_i32.inverse());
     }
 
     #[test]
     fn test_remove_ints() {
-        assert_eq!(3_i32, Group::remove(5_i32, 2_i32));
+        assert_eq!(3_i32, 5_i32.remove(2_i32));
     }
 }
