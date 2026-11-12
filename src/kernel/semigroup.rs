@@ -48,8 +48,8 @@ pub trait Semigroup: Sized {
 }
 
 pub struct Intercalate<T> {
-    pub value: T,
-    pub middle: T,
+    value: T,
+    middle: T,
 }
 
 impl<T> Intercalate<T> {
@@ -125,6 +125,9 @@ mod tests {
 
     #[test]
     fn test_basic_intercalate() {
+        // One of the reasons why `Semigroup[A].intercalate` exists in Cats is so we can pass the
+        // modified `Semigroup` to `combineAll` or `foldMap`. Using `Intercalate<T>` that pattern
+        // works "out of the box".
         let words = vec!["a".to_string(), "b".to_string(), "c".to_string()];
         let combined = Semigroup::combine_all_option(
             words
