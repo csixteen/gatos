@@ -1,9 +1,12 @@
 /// "Type class" for functors that define `imap`, which transforms an `F[A]` into an `F[B]`,
 /// given two transformations, one from `A` to `B` and another from `B` to `A`.
 pub trait Invariant {
+    // the inner type `A` inside `F<A>`
     type Inner;
+    // `F<B>` for any type `B`
     type Out<B>: Invariant<Inner = B>;
 
+    /// Transforms `F<A>` into `F<B>` using an isomorphism, i.e., `f: A -> B and g: B -> A`
     fn imap<B, F, G>(self, f: F, g: G) -> Self::Out<B>
     where
         F: Fn(Self::Inner) -> B,
