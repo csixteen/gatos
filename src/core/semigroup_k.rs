@@ -1,4 +1,4 @@
-use crate::kernel::semigroup::Semigroup;
+use crate::core::algebra::Algebra;
 
 /// Similar to [`Semigroup`], with the difference that it operates on kinds,
 /// i.e., on type constructors. It only operates on type constructors with one parameter
@@ -23,15 +23,6 @@ pub trait SemigroupK: Sized {
     // delegating `combine` to `combine_k`.
     fn algebra(self) -> Algebra<Self> {
         Algebra(self)
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Algebra<T>(pub T);
-
-impl<T: SemigroupK> Semigroup for Algebra<T> {
-    fn combine(self, right: Self) -> Self {
-        Algebra(self.0.combine_k(right.0))
     }
 }
 
