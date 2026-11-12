@@ -1,11 +1,11 @@
 use crate::core::{functor::Functor, invariant::Invariant};
 
-impl<T, E> Invariant for Result<T, E> {
+impl<T: 'static, E> Invariant for Result<T, E> {
     type Inner = T;
 
-    type Out<B> = Result<B, E>;
+    type Out<B: 'static> = Result<B, E>;
 
-    fn imap<B, F, G>(self, f: F, _g: G) -> Self::Out<B>
+    fn imap<B: 'static, F, G>(self, f: F, _g: G) -> Self::Out<B>
     where
         F: Fn(Self::Inner) -> B,
         G: Fn(B) -> Self::Inner,
@@ -14,7 +14,7 @@ impl<T, E> Invariant for Result<T, E> {
     }
 }
 
-impl<T, E> Functor for Result<T, E> {
+impl<T: 'static, E> Functor for Result<T, E> {
     type Inner = T;
 
     type Out<B> = Result<B, E>;

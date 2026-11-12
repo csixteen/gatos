@@ -2,12 +2,12 @@ use crate::core::{
     functor::Functor, invariant::Invariant, semigroup_k::SemigroupK, semigroupal::Semigroupal,
 };
 
-impl<T> Invariant for Option<T> {
+impl<T: 'static> Invariant for Option<T> {
     type Inner = T;
 
-    type Out<B> = Option<B>;
+    type Out<B: 'static> = Option<B>;
 
-    fn imap<B, F, G>(self, f: F, _g: G) -> Self::Out<B>
+    fn imap<B: 'static, F, G>(self, f: F, _g: G) -> Self::Out<B>
     where
         F: Fn(Self::Inner) -> B,
         G: Fn(B) -> Self::Inner,
@@ -26,7 +26,7 @@ impl<T> Invariant for Option<T> {
     }
 }
 
-impl<T> Functor for Option<T> {
+impl<T: 'static> Functor for Option<T> {
     type Inner = T;
 
     type Out<B> = Option<B>;
