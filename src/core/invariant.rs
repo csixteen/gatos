@@ -2,7 +2,7 @@
 /// given two transformations, one from `A` to `B` and another from `B` to `A`.
 pub trait Invariant {
     type Inner;
-    type Out<B>;
+    type Out<B>: Invariant<Inner = B>;
 
     fn imap<B, F, G>(self, f: F, g: G) -> Self::Out<B>
     where
