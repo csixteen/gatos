@@ -34,6 +34,7 @@ clippy.unwrap_used.level = "warn"
 [workspace.dependencies]
 # gatos
 gatos-kernel = { path = "./crates/gatos-kernel" }
+gatos-prim = { path = "./crates/gatos-prim" }
 gatos-strategy = { path = "./crates/gatos-strategy" }
 
 # other

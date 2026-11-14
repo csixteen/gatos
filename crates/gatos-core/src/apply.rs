@@ -1,6 +1,7 @@
-use crate::functor::Functor;
+use crate::{functor::Functor, invariant_semigroupal::InvariantSemigroupal};
+use gatos_prim::function::TupledFunction2;
 
-pub trait Apply: Functor {
+pub trait Apply: Functor + InvariantSemigroupal {
     /// This is the equivalent of Haskell's `<*>`, whose signature is:
     ///
     /// ```text
@@ -33,5 +34,18 @@ pub trait Apply: Functor {
     {
         let ff = self.map(|a| move |b| (a, b));
         Self::ap(ff, fb)
+    }
+
+    fn map2<'a, B, F, Z>(self, fb: <Self as Functor>::Out<B>, f: F) -> <Self as Functor>::Out<Z>
+    where
+        Self: Sized,
+        F: TupledFunction2<<Self as Functor>::Inner, B, Z> + 'a,
+        <Self as Functor>::Inner: 'a,
+        B: 'a,
+        Z: 'a,
+        <Self as Functor>::Out<(<Self as Functor>::Inner, B)>:
+            Functor<Inner = (<Self as Functor>::Inner, B), Out<Z> = <Self as Functor>::Out<Z>>,
+    {
+        <Self as Apply>::product(self, fb).map(f.tupled())
     }
 }

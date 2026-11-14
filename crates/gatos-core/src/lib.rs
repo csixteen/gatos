@@ -3,6 +3,7 @@ pub mod apply;
 pub mod functor;
 pub mod instances;
 pub mod invariant;
+pub mod invariant_semigroupal;
 pub mod monoid_k;
 pub mod semigroup_k;
 pub mod semigroupal;

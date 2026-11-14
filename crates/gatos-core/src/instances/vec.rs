@@ -25,17 +25,14 @@ impl<T> SemigroupK for Vec<T> {
     }
 }
 
-impl<T> Functor for Vec<T>
-where
-    T: 'static,
-{
+impl<T: 'static> Functor for Vec<T> {
     type Inner = T;
 
     type Out<B> = Vec<B>;
 
     fn map<B, F>(self, f: F) -> <Self as Functor>::Out<B>
     where
-        F: Fn(<Self as Functor>::Inner) -> B,
+        F: FnMut(<Self as Functor>::Inner) -> B,
     {
         self.into_iter().map(f).collect()
     }

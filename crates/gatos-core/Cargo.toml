@@ -9,6 +9,7 @@ workspace = true
 
 [dependencies]
 gatos-kernel.workspace = true
+gatos-prim.workspace = true
 
 [dev-dependencies]
 gatos-strategy.workspace = true
