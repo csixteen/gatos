@@ -1,4 +1,4 @@
-use crate::kernel::{monoid::Monoid, semigroup::Semigroup};
+use crate::{monoid::Monoid, semigroup::Semigroup};
 
 impl<T> Monoid for T
 where

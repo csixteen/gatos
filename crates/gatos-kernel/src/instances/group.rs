@@ -1,6 +1,6 @@
 use std::ops::Neg;
 
-use crate::kernel::{group::Group, monoid::Monoid};
+use crate::{group::Group, monoid::Monoid};
 
 impl<T> Group for T
 where

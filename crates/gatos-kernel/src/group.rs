@@ -1,4 +1,4 @@
-use crate::kernel::monoid::Monoid;
+use crate::monoid::Monoid;
 
 /// A Group is a [`Monoid`] where each element has an `inverse`.
 ///

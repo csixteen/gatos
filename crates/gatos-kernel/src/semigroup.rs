@@ -79,10 +79,10 @@ where
 mod laws {
     use std::fmt::Debug;
 
+    use gatos_strategy::triple;
     use proptest::{prelude::*, test_runner::TestCaseResult};
 
     use super::*;
-    use crate::strategy::triple;
 
     fn assert_semigroup_laws<T>(a: T, b: T, c: T) -> TestCaseResult
     where

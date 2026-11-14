@@ -1,4 +1,6 @@
-use crate::{core::semigroup_k::SemigroupK, kernel::semigroup::Semigroup};
+use gatos_kernel::semigroup::Semigroup;
+
+use crate::semigroup_k::SemigroupK;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Algebra<T>(pub T);

@@ -1,4 +1,4 @@
-use crate::core::functor::Functor;
+use crate::functor::Functor;
 
 pub trait Apply: Functor {
     /// This is the equivalent of Haskell's `<*>`, whose signature is:

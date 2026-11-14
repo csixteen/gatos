@@ -1,4 +1,4 @@
-use crate::core::algebra::Algebra;
+use crate::algebra::Algebra;
 
 /// Similar to [`Semigroup`], with the difference that it operates on kinds,
 /// i.e., on type constructors. It only operates on type constructors with one parameter
@@ -30,10 +30,10 @@ pub trait SemigroupK: Sized {
 mod laws {
     use std::fmt::Debug;
 
+    use gatos_strategy::triple;
     use proptest::{prelude::*, test_runner::TestCaseResult};
 
     use super::*;
-    use crate::strategy::triple;
 
     fn assert_semigroup_k_laws<T>(a: T, b: T, c: T) -> TestCaseResult
     where

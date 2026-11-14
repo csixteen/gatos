@@ -1,4 +1,4 @@
-use crate::core::invariant::Invariant;
+use crate::invariant::Invariant;
 
 pub trait Functor: Invariant {
     type Inner;

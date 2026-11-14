@@ -1,6 +1,6 @@
 use std::num::NonZeroUsize;
 
-use crate::kernel::semigroup::Semigroup;
+use crate::semigroup::Semigroup;
 
 /// A monoid extends a [`Semigroup`] with `empty`, which is the identity element for the associative
 /// operator in the semigroup.

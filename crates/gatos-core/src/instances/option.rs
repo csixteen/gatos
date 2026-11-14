@@ -1,4 +1,4 @@
-use crate::core::{
+use crate::{
     functor::Functor, invariant::Invariant, semigroup_k::SemigroupK, semigroupal::Semigroupal,
 };
 

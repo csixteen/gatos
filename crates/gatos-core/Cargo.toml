@@ -1,0 +1,15 @@
+[package]
+name = "gatos-core"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+gatos-kernel.workspace = true
+
+[dev-dependencies]
+gatos-strategy.workspace = true
+proptest.workspace = true

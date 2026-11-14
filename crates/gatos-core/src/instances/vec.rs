@@ -1,4 +1,4 @@
-use crate::core::{functor::Functor, invariant::Invariant, semigroup_k::SemigroupK};
+use crate::{functor::Functor, invariant::Invariant, semigroup_k::SemigroupK};
 
 impl<T: 'static> Invariant for Vec<T> {
     type Inner = T;

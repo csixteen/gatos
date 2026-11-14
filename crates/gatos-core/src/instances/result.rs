@@ -1,4 +1,4 @@
-use crate::core::{functor::Functor, invariant::Invariant};
+use crate::{functor::Functor, invariant::Invariant};
 
 impl<T: 'static, E> Invariant for Result<T, E> {
     type Inner = T;

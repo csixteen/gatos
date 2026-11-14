@@ -1,11 +1,40 @@
-[package]
-name = "gatos"
-version = "0.1.0"
-edition = "2024"
+[workspace]
+members = ["crates/*"]
+exclude = []
+resolver = "2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace.lints]
+# Specific built-in lints
+rust.rust_2018_idioms.level = "warn"
 
-[dependencies]
+# `coverage`, `tokio_unstable`, etc. are custom cfg names we set intentionally (the latter via
+# rustflags), not built-in cfgs. We must register them here or `unexpected_cfgs` warns on every
+# use.
+rust.unexpected_cfgs = { level = "warn", check-cfg = [ 'cfg(coverage)' ] }
 
-[dev-dependencies]
+# Clippy lint groups (priority set to -1 so that more specific lints be able to override them).
+clippy.complexity = { level = "warn", priority = -1 }
+clippy.correctness = { level = "warn", priority = -1 }
+clippy.perf = { level = "warn", priority = -1 }
+clippy.style = { level = "warn", priority = -1 }
+clippy.suspicious = { level = "warn", priority = -1 }
+
+# Specific clippy lints
+clippy.unconditional_recursion = "deny"
+clippy.clone_on_ref_ptr.level = "warn"
+clippy.disallowed_methods.level = "warn"
+# Prevents deadlocks from holding mutex guards in `if let`/`match` longer than expected.
+# Consider using the scoped locking extension traits from `ditto-utils`
+# (e.g., `ScopedRwLock::read_with`, `ScopedRwLock::write_with`) to make lock scopes explicit.
+clippy.significant_drop_in_scrutinee.level = "warn"
+clippy.undocumented_unsafe_blocks.level = "warn"
+clippy.unwrap_used.level = "warn"
+
+[workspace.dependencies]
+# gatos
+gatos-kernel = { path = "./crates/gatos-kernel" }
+gatos-strategy = { path = "./crates/gatos-strategy" }
+
+# other
 proptest = "1.12"

@@ -3,7 +3,7 @@ use std::{
     hash::Hash,
 };
 
-use crate::kernel::semigroup::Semigroup;
+use crate::semigroup::Semigroup;
 
 impl Semigroup for () {
     fn combine(self, _: Self) -> Self {}
