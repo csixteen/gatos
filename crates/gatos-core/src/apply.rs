@@ -36,13 +36,10 @@ pub trait Apply: Functor + InvariantSemigroupal {
         Self::ap(ff, fb)
     }
 
-    fn map2<'a, B, F, Z>(self, fb: <Self as Functor>::Out<B>, f: F) -> <Self as Functor>::Out<Z>
+    fn map2<B, F, Z>(self, fb: <Self as Functor>::Out<B>, f: F) -> <Self as Functor>::Out<Z>
     where
         Self: Sized,
-        F: TupledFunction2<<Self as Functor>::Inner, B, Z> + 'a,
-        <Self as Functor>::Inner: 'a,
-        B: 'a,
-        Z: 'a,
+        F: TupledFunction2<<Self as Functor>::Inner, B, Z>,
         <Self as Functor>::Out<(<Self as Functor>::Inner, B)>:
             Functor<Inner = (<Self as Functor>::Inner, B), Out<Z> = <Self as Functor>::Out<Z>>,
     {
