@@ -6,13 +6,13 @@ pub trait Functor: Invariant {
 
     fn map<B, F>(self, f: F) -> <Self as Functor>::Out<B>
     where
-        F: FnOnce(<Self as Functor>::Inner) -> B;
+        F: Fn(<Self as Functor>::Inner) -> B;
 
     /// Alias for [`Functor::map()`]
     fn fmap<B, F>(self, f: F) -> <Self as Functor>::Out<B>
     where
         Self: Sized,
-        F: FnOnce(<Self as Functor>::Inner) -> B,
+        F: Fn(<Self as Functor>::Inner) -> B,
     {
         self.map(f)
     }
@@ -21,7 +21,7 @@ pub trait Functor: Invariant {
     fn lift<B, F>(f: F) -> impl FnOnce(Self) -> <Self as Functor>::Out<B>
     where
         Self: Sized,
-        F: FnOnce(<Self as Functor>::Inner) -> B,
+        F: Fn(<Self as Functor>::Inner) -> B,
     {
         move |fa: Self| fa.fmap(f)
     }
@@ -29,9 +29,10 @@ pub trait Functor: Invariant {
     /// Replaces the `A` value in `F[A]` with the supplied value.
     fn r#as<B>(self, b: B) -> <Self as Functor>::Out<B>
     where
+        B: Clone,
         Self: Sized,
     {
-        self.map(|_| b)
+        self.map(|_| b.clone())
     }
 
     fn void(self) -> <Self as Functor>::Out<()>

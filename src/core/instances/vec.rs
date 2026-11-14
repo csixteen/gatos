@@ -1,4 +1,4 @@
-use crate::core::{invariant::Invariant, semigroup_k::SemigroupK};
+use crate::core::{functor::Functor, invariant::Invariant, semigroup_k::SemigroupK};
 
 impl<T: 'static> Invariant for Vec<T> {
     type Inner = T;
@@ -22,5 +22,21 @@ impl<T> SemigroupK for Vec<T> {
     fn combine_k(mut self, mut b: Self) -> Self {
         self.append(&mut b);
         self
+    }
+}
+
+impl<T> Functor for Vec<T>
+where
+    T: 'static,
+{
+    type Inner = T;
+
+    type Out<B> = Vec<B>;
+
+    fn map<B, F>(self, f: F) -> <Self as Functor>::Out<B>
+    where
+        F: Fn(<Self as Functor>::Inner) -> B,
+    {
+        self.into_iter().map(f).collect()
     }
 }
