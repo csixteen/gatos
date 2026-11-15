@@ -1,6 +1,6 @@
-pub trait Semigroupal {
-    type Inner;
-    type Out<B>;
+use crate::hkt::HKT;
 
-    fn product<B>(self, fb: Self::Out<B>) -> Self::Out<(Self::Inner, B)>;
+pub trait Semigroupal: HKT {
+    fn product<B>(self, fb: <Self as HKT>::Out<B>)
+    -> <Self as HKT>::Out<(<Self as HKT>::Inner, B)>;
 }

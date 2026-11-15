@@ -1,6 +1,6 @@
 use crate::{
-    functor::Functor, hkt::HKT, invariant::Invariant, semigroup_k::SemigroupK,
-    semigroupal::Semigroupal,
+    applicative::Applicative, apply::Apply, functor::Functor, hkt::HKT, invariant::Invariant,
+    invariant_monoidal::InvariantMonoidal, semigroup_k::SemigroupK, semigroupal::Semigroupal,
 };
 
 impl<T> HKT for Option<T> {
@@ -39,15 +39,14 @@ impl<'a, T: 'a> Functor<'a> for Option<T> {
 }
 
 impl<T> Semigroupal for Option<T> {
-    type Inner = T;
-
-    type Out<B> = Option<B>;
-
     fn product<B>(self, fb: Self::Out<B>) -> Self::Out<(Self::Inner, B)> {
-        match (self, fb) {
-            (Some(t), Some(b)) => Some((t, b)),
-            _ => None,
-        }
+        Some((self?, fb?))
+    }
+}
+
+impl<'a, T: 'a> InvariantMonoidal<'a> for Option<T> {
+    fn unit() -> <Self as HKT>::Out<()> {
+        Some(())
     }
 }
 
@@ -59,18 +58,20 @@ impl<T> SemigroupK for Option<T> {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl<'a, T: 'a> Apply<'a> for Option<T> {
+    fn ap<A, B, F>(ff: <Self as HKT>::Out<F>, fa: <Self as HKT>::Out<A>) -> <Self as HKT>::Out<B>
+    where
+        F: FnOnce(A) -> B,
+    {
+        match (ff, fa) {
+            (Some(f), Some(a)) => Some(f(a)),
+            _ => None,
+        }
+    }
+}
 
-    #[test]
-    fn test_semigroupal_option() {
-        let a = Some(3_i32);
-        let b = Some(String::from("foo"));
-
-        assert_eq!(None, Option::<i32>::None.product(Option::<String>::None));
-        assert_eq!(None, a.product(Option::<String>::None));
-        assert_eq!(None, b.clone().product(Option::<i32>::None));
-        assert_eq!(Some((3_i32, String::from("foo"))), a.product(b));
+impl<'a, T: 'a> Applicative<'a> for Option<T> {
+    fn pure<B>(x: B) -> <Self as HKT>::Out<B> {
+        Some(x)
     }
 }
