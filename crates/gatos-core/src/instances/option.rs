@@ -1,13 +1,16 @@
 use crate::{
-    functor::Functor, invariant::Invariant, semigroup_k::SemigroupK, semigroupal::Semigroupal,
+    functor::Functor, hkt::HKT, invariant::Invariant, semigroup_k::SemigroupK,
+    semigroupal::Semigroupal,
 };
 
-impl<T: 'static> Invariant for Option<T> {
+impl<T> HKT for Option<T> {
     type Inner = T;
 
-    type Out<B: 'static> = Option<B>;
+    type Out<B> = Option<B>;
+}
 
-    fn imap<B: 'static, F, G>(self, f: F, _g: G) -> Self::Out<B>
+impl<'a, T: 'a> Invariant<'a> for Option<T> {
+    fn imap<B, F, G>(self, f: F, _g: G) -> Self::Out<B>
     where
         F: Fn(Self::Inner) -> B,
         G: Fn(B) -> Self::Inner,
@@ -26,14 +29,10 @@ impl<T: 'static> Invariant for Option<T> {
     }
 }
 
-impl<T: 'static> Functor for Option<T> {
-    type Inner = T;
-
-    type Out<B> = Option<B>;
-
-    fn map<B, F>(self, f: F) -> <Self as Functor>::Out<B>
+impl<'a, T: 'a> Functor<'a> for Option<T> {
+    fn map<B, F>(self, f: F) -> <Self as HKT>::Out<B>
     where
-        F: FnOnce(<Self as Functor>::Inner) -> B,
+        F: FnOnce(<Self as HKT>::Inner) -> B,
     {
         self.map(f)
     }
@@ -53,9 +52,6 @@ impl<T> Semigroupal for Option<T> {
 }
 
 impl<T> SemigroupK for Option<T> {
-    type Inner = T;
-    type Out<B> = Option<B>;
-
     fn combine_k(self, b: Self) -> Self {
         // The inner type `T` of `Option<T>` is not fully specified and can be anything,
         // therefor we don't know how to combine them, so we just use `Option::or()`.

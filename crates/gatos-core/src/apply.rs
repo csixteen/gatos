@@ -1,7 +1,7 @@
-use crate::{functor::Functor, invariant_semigroupal::InvariantSemigroupal};
+use crate::{functor::Functor, hkt::HKT, invariant_semigroupal::InvariantSemigroupal};
 use gatos_prim::function::TupledFunction2;
 
-pub trait Apply: Functor + InvariantSemigroupal {
+pub trait Apply<'a>: HKT + Functor<'a> + InvariantSemigroupal<'a> {
     /// This is the equivalent of Haskell's `<*>`, whose signature is:
     ///
     /// ```text
@@ -9,15 +9,12 @@ pub trait Apply: Functor + InvariantSemigroupal {
     /// ```
     ///
     /// It can be thought of as function application inside a Functor.
-    fn ap<A, B, F>(
-        ff: <Self as Functor>::Out<F>,
-        fa: <Self as Functor>::Out<A>,
-    ) -> <Self as Functor>::Out<B>
+    fn ap<A, B, F>(ff: <Self as HKT>::Out<F>, fa: <Self as HKT>::Out<A>) -> <Self as HKT>::Out<B>
     where
         F: FnOnce(A) -> B;
 
     /// Compose two actions, discarding any value produced by the first.
-    fn product_r<B>(self, fb: <Self as Functor>::Out<B>) -> <Self as Functor>::Out<B>
+    fn product_r<B>(self, fb: <Self as HKT>::Out<B>) -> <Self as HKT>::Out<B>
     where
         Self: Sized,
     {
@@ -25,10 +22,7 @@ pub trait Apply: Functor + InvariantSemigroupal {
         Self::ap(ff, fb)
     }
 
-    fn product<B>(
-        self,
-        fb: <Self as Functor>::Out<B>,
-    ) -> <Self as Functor>::Out<(<Self as Functor>::Inner, B)>
+    fn product<B>(self, fb: <Self as HKT>::Out<B>) -> <Self as HKT>::Out<(<Self as HKT>::Inner, B)>
     where
         Self: Sized,
     {
@@ -36,12 +30,12 @@ pub trait Apply: Functor + InvariantSemigroupal {
         Self::ap(ff, fb)
     }
 
-    fn map2<B, F, Z>(self, fb: <Self as Functor>::Out<B>, f: F) -> <Self as Functor>::Out<Z>
+    fn map2<B, F, Z>(self, fb: <Self as HKT>::Out<B>, f: F) -> <Self as HKT>::Out<Z>
     where
         Self: Sized,
-        F: TupledFunction2<<Self as Functor>::Inner, B, Z>,
-        <Self as Functor>::Out<(<Self as Functor>::Inner, B)>:
-            Functor<Inner = (<Self as Functor>::Inner, B), Out<Z> = <Self as Functor>::Out<Z>>,
+        F: TupledFunction2<<Self as HKT>::Inner, B, Z>,
+        <Self as HKT>::Out<(<Self as HKT>::Inner, B)>:
+            Functor<'a, Inner = (<Self as HKT>::Inner, B), Out<Z> = <Self as HKT>::Out<Z>>,
     {
         <Self as Apply>::product(self, fb).map(f.tupled())
     }

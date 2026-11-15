@@ -1,8 +1,10 @@
 pub mod algebra;
 pub mod apply;
 pub mod functor;
+pub mod hkt;
 pub mod instances;
 pub mod invariant;
+pub mod invariant_monoidal;
 pub mod invariant_semigroupal;
 pub mod monoid_k;
 pub mod semigroup_k;

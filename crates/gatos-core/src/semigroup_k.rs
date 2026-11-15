@@ -1,4 +1,4 @@
-use crate::algebra::Algebra;
+use crate::{algebra::Algebra, hkt::HKT};
 
 /// Similar to [`Semigroup`], with the difference that it operates on kinds,
 /// i.e., on type constructors. It only operates on type constructors with one parameter
@@ -7,10 +7,7 @@ use crate::algebra::Algebra;
 /// type constructors, such as `Option<T>`.
 ///
 /// [`Semigroup`]: crate::kernel::semigroup::Semigroup
-pub trait SemigroupK: Sized {
-    type Inner;
-    type Out<B>;
-
+pub trait SemigroupK: HKT {
     /// Combines two `F[_]`.
     fn combine_k(self, b: Self) -> Self;
 
@@ -21,7 +18,10 @@ pub trait SemigroupK: Sized {
     // with concret `Semigroup` implementations, e.g., `Option<T>` where `T: Semigroup`. As a
     // workaround, we can use `Algebra<T>`, which wraps `Self`, and implements `Semigroup` by
     // delegating `combine` to `combine_k`.
-    fn algebra(self) -> Algebra<Self> {
+    fn algebra(self) -> Algebra<Self>
+    where
+        Self: Sized,
+    {
         Algebra(self)
     }
 }

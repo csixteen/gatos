@@ -1,11 +1,13 @@
-use crate::{functor::Functor, invariant::Invariant};
+use crate::{functor::Functor, hkt::HKT, invariant::Invariant};
 
-impl<T: 'static, E> Invariant for Result<T, E> {
+impl<T, E> HKT for Result<T, E> {
     type Inner = T;
 
-    type Out<B: 'static> = Result<B, E>;
+    type Out<B> = Result<B, E>;
+}
 
-    fn imap<B: 'static, F, G>(self, f: F, _g: G) -> Self::Out<B>
+impl<'a, T: 'a, E> Invariant<'a> for Result<T, E> {
+    fn imap<B, F, G>(self, f: F, _g: G) -> Self::Out<B>
     where
         F: Fn(Self::Inner) -> B,
         G: Fn(B) -> Self::Inner,
@@ -14,14 +16,10 @@ impl<T: 'static, E> Invariant for Result<T, E> {
     }
 }
 
-impl<T: 'static, E> Functor for Result<T, E> {
-    type Inner = T;
-
-    type Out<B> = Result<B, E>;
-
-    fn map<B, F>(self, f: F) -> <Self as Functor>::Out<B>
+impl<'a, T: 'a, E> Functor<'a> for Result<T, E> {
+    fn map<B, F>(self, f: F) -> <Self as HKT>::Out<B>
     where
-        F: FnOnce(<Self as Functor>::Inner) -> B,
+        F: FnOnce(<Self as HKT>::Inner) -> B,
     {
         self.map(f)
     }
