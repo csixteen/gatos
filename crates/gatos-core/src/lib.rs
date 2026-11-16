@@ -1,6 +1,7 @@
 pub mod algebra;
 pub mod applicative;
 pub mod apply;
+pub mod flat_map;
 pub mod functor;
 pub mod hkt;
 pub mod instances;

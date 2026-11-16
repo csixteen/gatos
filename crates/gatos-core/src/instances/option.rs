@@ -1,6 +1,7 @@
 use crate::{
-    applicative::Applicative, apply::Apply, functor::Functor, hkt::HKT, invariant::Invariant,
-    invariant_monoidal::InvariantMonoidal, semigroup_k::SemigroupK, semigroupal::Semigroupal,
+    applicative::Applicative, apply::Apply, flat_map::FlatMap, functor::Functor, hkt::HKT,
+    invariant::Invariant, invariant_monoidal::InvariantMonoidal, semigroup_k::SemigroupK,
+    semigroupal::Semigroupal,
 };
 
 impl<T> HKT for Option<T> {
@@ -63,15 +64,21 @@ impl<'a, T: 'a> Apply<'a> for Option<T> {
     where
         F: FnOnce(A) -> B,
     {
-        match (ff, fa) {
-            (Some(f), Some(a)) => Some(f(a)),
-            _ => None,
-        }
+        Some(ff?(fa?))
     }
 }
 
 impl<'a, T: 'a> Applicative<'a> for Option<T> {
     fn pure<B>(x: B) -> <Self as HKT>::Out<B> {
         Some(x)
+    }
+}
+
+impl<'a, T: 'a> FlatMap<'a> for Option<T> {
+    fn flat_map<B, F>(self, f: F) -> <Self as HKT>::Out<B>
+    where
+        F: Fn(<Self as HKT>::Inner) -> <Self as HKT>::Out<B>,
+    {
+        self.and_then(f)
     }
 }
