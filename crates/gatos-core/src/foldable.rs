@@ -86,4 +86,13 @@ pub trait Foldable: HKT + UnorderedFoldable {
     {
         <<Self as HKT>::Inner as Monoid>::combine_all(self.into_iter())
     }
+
+    fn fold_map<B, F>(self, f: F) -> B
+    where
+        Self: Sized,
+        F: Fn(<Self as HKT>::Inner) -> B,
+        B: Monoid,
+    {
+        self.fold_left(B::empty(), |b, a| b.combine(f(a)))
+    }
 }
