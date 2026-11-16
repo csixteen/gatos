@@ -12,7 +12,7 @@ impl<T> HKT for Algebra<T> {
 }
 
 impl<T: SemigroupK> Semigroup for Algebra<T> {
-    fn combine(self, right: Self) -> Self {
-        Algebra(self.0.combine_k(right.0))
+    fn combine(self, right: impl Into<Self>) -> Self {
+        Algebra(self.0.combine_k(right.into().0))
     }
 }

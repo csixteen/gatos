@@ -1,8 +1,10 @@
 use std::num::NonZeroUsize;
 
+use crate::{intercalate::Intercalate, reverse::Reverse};
+
 /// A semigroup is a set with an associative operator that combines two elements from the set.
 pub trait Semigroup: Sized {
-    fn combine(self, right: Self) -> Self;
+    fn combine(self, right: impl Into<Self>) -> Self;
 
     fn combine_n(self, n: NonZeroUsize) -> Self
     where
@@ -24,10 +26,7 @@ pub trait Semigroup: Sized {
     // wrapping `T` in a newtype struct, for example. I decided to return `Intercalate`, which
     // implements `Semigroup` (Rust uses similar patterns, such as `Rev`).
     fn intercalate(self, middle: Self) -> Intercalate<Self> {
-        Intercalate {
-            value: self,
-            middle,
-        }
+        Intercalate::new(self, middle)
     }
 
     fn repeated_combine_n(self, n: NonZeroUsize) -> Self
@@ -45,33 +44,9 @@ pub trait Semigroup: Sized {
 
         _repeated(self.clone(), n.into(), self)
     }
-}
 
-pub struct Intercalate<T> {
-    value: T,
-    middle: T,
-}
-
-impl<T> Intercalate<T> {
-    pub fn new(value: T, middle: T) -> Self {
-        Intercalate { value, middle }
-    }
-
-    pub fn into_inner(self) -> T {
-        self.value
-    }
-}
-
-impl<T> Semigroup for Intercalate<T>
-where
-    T: Semigroup + Clone,
-{
-    fn combine(self, right: Self) -> Self {
-        let combined = self.value.combine(self.middle.clone().combine(right.value));
-        Intercalate {
-            value: combined,
-            ..self
-        }
+    fn reverse(self) -> Reverse<Self> {
+        Reverse::new(self)
     }
 }
 
