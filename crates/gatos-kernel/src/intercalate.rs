@@ -19,6 +19,16 @@ impl<T> Intercalate<T> {
     }
 }
 
+impl<T: Clone> Intercalate<T> {
+    pub fn value(&self) -> T {
+        self.value.clone()
+    }
+
+    pub fn middle(&self) -> T {
+        self.middle.clone()
+    }
+}
+
 impl<T> From<(T, T)> for Intercalate<T>
 where
     T: Semigroup,

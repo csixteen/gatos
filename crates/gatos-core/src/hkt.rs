@@ -1,3 +1,4 @@
+/// Higher Kinded Type ... or as close as it gets.
 pub trait HKT {
     /// The inner type `A` in `F<A>`
     type Inner;

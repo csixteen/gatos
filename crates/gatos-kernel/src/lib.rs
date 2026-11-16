@@ -1,3 +1,4 @@
+pub mod commutative_monoid;
 pub mod commutative_semigroup;
 pub mod group;
 pub mod instances;

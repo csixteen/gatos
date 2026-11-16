@@ -38,4 +38,5 @@ gatos-prim = { path = "./crates/gatos-prim" }
 gatos-strategy = { path = "./crates/gatos-strategy" }
 
 # other
+num = "0.4.3"
 proptest = "1.12"
