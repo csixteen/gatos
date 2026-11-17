@@ -42,5 +42,5 @@ pub trait FlatMap<'a>: HKT + Apply<'a> {
 
     fn tail_rec_m<A, B, F>(a: A, f: F) -> Self::Of<B>
     where
-        F: Fn(A) -> Self::Of<Either<A, B>>;
+        F: FnMut(A) -> Self::Of<Either<A, B>>;
 }

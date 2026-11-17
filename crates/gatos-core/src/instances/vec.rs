@@ -72,11 +72,30 @@ impl<'a> FlatMap<'a> for VecK {
         fa.into_iter().flat_map(f).collect()
     }
 
-    fn tail_rec_m<A, B, F>(a: A, f: F) -> Self::Of<B>
+    fn tail_rec_m<A, B, F>(a: A, mut f: F) -> Self::Of<B>
     where
-        F: Fn(A) -> Self::Of<gatos_prim::either::Either<A, B>>,
+        F: FnMut(A) -> Self::Of<gatos_prim::either::Either<A, B>>,
     {
-        todo!()
+        use gatos_prim::either::Either::*;
+
+        // Unlike OptionK, a single step `f(a)` on VecK can produce zero or more branches
+        // (`Vec<Either<A, B>>`).
+        let mut res = Vec::new();
+        let mut stack = vec![a];
+
+        while let Some(curr) = stack.pop() {
+            // this is so we preserve Scala Cats' depth-first ordering matching `flatMap` semantics:
+            // we reverse the step results before pushing them onto the stack so that the first
+            // element is poppped and processed next.
+            for item in f(curr).into_iter().rev() {
+                match item {
+                    Left(next) => stack.push(next),
+                    Right(b) => res.push(b),
+                }
+            }
+        }
+
+        res
     }
 }
 

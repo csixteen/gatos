@@ -73,9 +73,9 @@ impl<'a, E> FlatMap<'a> for ResultK<E> {
         fa.and_then(f)
     }
 
-    fn tail_rec_m<A, B, F>(a: A, f: F) -> Self::Of<B>
+    fn tail_rec_m<A, B, F>(a: A, mut f: F) -> Self::Of<B>
     where
-        F: Fn(A) -> Self::Of<gatos_prim::either::Either<A, B>>,
+        F: FnMut(A) -> Self::Of<gatos_prim::either::Either<A, B>>,
     {
         use gatos_prim::either::Either::*;
 

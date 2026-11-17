@@ -5,11 +5,15 @@ use std::{
 };
 
 use gatos_kernel::monoid::Monoid;
+use gatos_prim::either::Either;
 use num::Zero;
 
-use crate::{hkt::HKT, unordered_foldable::UnorderedFoldable};
+use crate::{hkt::HKT, monad::Monad, unordered_foldable::UnorderedFoldable};
 
 pub trait Foldable: HKT + UnorderedFoldable {
+    // Scala Cats uses `Eval` and `Source.fromFoldable`. Trying to implement those types and
+    // constructs in Rust would introduce extra overhead and unnecessary boxing. Iterators in Rust
+    // are lazy and solve (part of) the problems that Eval + Source address.
     type Iter<A>: Iterator<Item = A>;
 
     fn to_iter<A>(fa: Self::Of<A>) -> Self::Iter<A>;
@@ -106,5 +110,19 @@ pub trait Foldable: HKT + UnorderedFoldable {
         B: Monoid,
     {
         Self::fold_left(fa, B::empty(), |b, a| b.combine(f(a)))
+    }
+
+    /// Performs a monadic left fold into monad `M`.
+    fn fold_m<'a, M, A, B, F>(fa: Self::Of<A>, z: B, mut f: F) -> M::Of<B>
+    where
+        M: Monad<'a>,
+        F: FnMut(B, A) -> M::Of<B>,
+    {
+        let mut iter = Self::to_iter(fa);
+
+        M::tail_rec_m(z, |acc| match iter.next() {
+            Some(a) => <M as Monad>::map(f(acc, a), Either::Left),
+            None => todo!(),
+        })
     }
 }

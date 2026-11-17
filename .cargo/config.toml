@@ -1,0 +1,2 @@
+[alias]
+fmt-nightly = "fmt +nightly"
