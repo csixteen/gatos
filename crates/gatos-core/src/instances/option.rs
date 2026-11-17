@@ -80,4 +80,17 @@ impl<'a> FlatMap<'a> for OptionK {
     {
         fa.and_then(f)
     }
+
+    fn tail_rec_m<A, B, F>(a: A, f: F) -> Self::Of<B>
+    where
+        F: Fn(A) -> Self::Of<gatos_prim::either::Either<A, B>>,
+    {
+        use gatos_prim::either::Either::*;
+
+        match f(a) {
+            Some(Left(aa)) => Self::tail_rec_m(aa, f),
+            Some(Right(b)) => Some(b),
+            None => None,
+        }
+    }
 }

@@ -10,10 +10,25 @@ use num::Zero;
 use crate::{hkt::HKT, unordered_foldable::UnorderedFoldable};
 
 pub trait Foldable: HKT + UnorderedFoldable {
+    type Iter<A>: Iterator<Item = A>;
+
+    fn to_iter<A>(fa: Self::Of<A>) -> Self::Iter<A>;
+
     /// Left associative fold on `F` (`self`) using the function `f` and initial value `b`.
     fn fold_left<A, B, F>(fa: Self::Of<A>, b: B, f: F) -> B
     where
-        F: Fn(B, A) -> B;
+        F: FnMut(B, A) -> B,
+    {
+        Self::to_iter(fa).fold(b, f)
+    }
+
+    fn fold_right<A, B, F>(fa: Self::Of<A>, b: B, mut f: F) -> B
+    where
+        Self::Iter<A>: DoubleEndedIterator,
+        F: FnMut(A, B) -> B,
+    {
+        Self::to_iter(fa).rfold(b, |acc, a| f(a, acc))
+    }
 
     fn reduce_left_to_option<A, B, F, G>(fa: Self::Of<A>, f: F, g: G) -> Option<B>
     where
