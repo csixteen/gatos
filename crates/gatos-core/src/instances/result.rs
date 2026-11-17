@@ -79,10 +79,14 @@ impl<'a, E> FlatMap<'a> for ResultK<E> {
     {
         use gatos_prim::either::Either::*;
 
-        match f(a) {
-            Ok(Left(aa)) => Self::tail_rec_m(aa, f),
-            Ok(Right(b)) => Ok(b),
-            Err(e) => Err(e),
+        let mut curr = a;
+
+        loop {
+            match f(curr) {
+                Ok(Left(aa)) => curr = aa,
+                Ok(Right(b)) => return Ok(b),
+                Err(e) => return Err(e),
+            }
         }
     }
 }

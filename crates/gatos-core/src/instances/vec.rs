@@ -105,7 +105,10 @@ impl UnorderedFoldable for VecK {
         B: gatos_kernel::commutative_monoid::CommutativeMonoid,
         F: Fn(A) -> B,
     {
-        todo!()
+        // for VecK, `unordered_fold_map` maps each element `A` to a `CommutativeMonoid`, and
+        // combines the results with `B::combine()` using `B::empty()` as initial value.
+        fa.into_iter()
+            .fold(B::empty(), |acc, a| B::combine(acc, f(a)))
     }
 }
 
