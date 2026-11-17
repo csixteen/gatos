@@ -1,7 +1,7 @@
 use crate::{
-    applicative::Applicative, apply::Apply, flat_map::FlatMap, functor::Functor, hkt::HKT,
-    invariant::Invariant, invariant_monoidal::InvariantMonoidal, semigroup_k::SemigroupK,
-    semigroupal::Semigroupal,
+    applicative::Applicative, apply::Apply, flat_map::FlatMap, foldable::Foldable,
+    functor::Functor, hkt::HKT, invariant::Invariant, invariant_monoidal::InvariantMonoidal,
+    semigroup_k::SemigroupK, semigroupal::Semigroupal, unordered_foldable::UnorderedFoldable,
 };
 
 pub struct OptionK;
@@ -96,5 +96,24 @@ impl<'a> FlatMap<'a> for OptionK {
                 None => return None,
             }
         }
+    }
+}
+
+impl UnorderedFoldable for OptionK {
+    fn unordered_fold_map<A, B, F>(fa: Self::Of<A>, f: F) -> B
+    where
+        B: gatos_kernel::commutative_monoid::CommutativeMonoid,
+        F: Fn(A) -> B,
+    {
+        fa.into_iter()
+            .fold(B::empty(), |acc, a| B::combine(acc, f(a)))
+    }
+}
+
+impl Foldable for OptionK {
+    type Iter<A> = ::std::option::IntoIter<A>;
+
+    fn to_iter<A>(fa: Self::Of<A>) -> Self::Iter<A> {
+        fa.into_iter()
     }
 }
