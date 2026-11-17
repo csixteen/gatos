@@ -1,14 +1,12 @@
-use crate::{hkt::HKT, invariant::Invariant, invariant_semigroupal::InvariantSemigroupal};
+use crate::invariant_semigroupal::InvariantSemigroupal;
 
 pub trait InvariantMonoidal<'a>: InvariantSemigroupal<'a> {
-    fn unit() -> <Self as HKT>::Out<()>;
+    fn unit() -> Self::Of<()>;
 
-    fn point<B>(value: B) -> <Self as HKT>::Out<B>
+    fn point<A>(a: A) -> Self::Of<A>
     where
-        B: Clone + 'static,
-        <Self as HKT>::Out<()>: Invariant<'a, Inner = (), Out<B> = <Self as HKT>::Out<B>>,
+        A: Clone + 'static,
     {
-        let unit: <Self as HKT>::Out<()> = <Self as InvariantMonoidal>::unit();
-        <<Self as HKT>::Out<()> as Invariant>::imap(unit, move |()| value.clone(), |_: B| ())
+        Self::imap(Self::unit(), move |_| a.clone(), |_| ())
     }
 }

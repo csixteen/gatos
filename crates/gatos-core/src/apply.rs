@@ -9,34 +9,33 @@ pub trait Apply<'a>: HKT + Functor<'a> + InvariantSemigroupal<'a> {
     /// ```
     ///
     /// It can be thought of as function application inside a Functor.
-    fn ap<A, B, F>(ff: <Self as HKT>::Out<F>, fa: <Self as HKT>::Out<A>) -> <Self as HKT>::Out<B>
+    fn ap<A, B, F>(ff: Self::Of<F>, fa: Self::Of<A>) -> Self::Of<B>
     where
         F: FnOnce(A) -> B;
 
     /// Compose two actions, discarding any value produced by the first.
-    fn product_r<B>(self, fb: <Self as HKT>::Out<B>) -> <Self as HKT>::Out<B>
+    fn product_r<A, B>(fa: Self::Of<A>, fb: Self::Of<B>) -> Self::Of<B>
     where
         Self: Sized,
     {
-        let ff = self.r#as(|b| b);
+        let ff = Self::r#as(fa, |b| b);
         Self::ap(ff, fb)
     }
 
-    fn product<B>(self, fb: <Self as HKT>::Out<B>) -> <Self as HKT>::Out<(<Self as HKT>::Inner, B)>
+    fn product<A, B>(fa: Self::Of<A>, fb: Self::Of<B>) -> Self::Of<(A, B)>
     where
         Self: Sized,
     {
-        let ff = self.map(|a| move |b| (a, b));
+        let ff = Self::map(fa, |a| move |b| (a, b));
         Self::ap(ff, fb)
     }
 
-    fn map2<B, F, Z>(self, fb: <Self as HKT>::Out<B>, f: F) -> <Self as HKT>::Out<Z>
+    fn map2<A, B, F, Z>(fa: Self::Of<A>, fb: Self::Of<B>, f: F) -> Self::Of<Z>
     where
         Self: Sized,
-        F: TupledFunction2<<Self as HKT>::Inner, B, Z>,
-        <Self as HKT>::Out<(<Self as HKT>::Inner, B)>:
-            Functor<'a, Inner = (<Self as HKT>::Inner, B), Out<Z> = <Self as HKT>::Out<Z>>,
+        F: TupledFunction2<A, B, Z>,
     {
-        <Self as Apply>::product(self, fb).map(f.tupled())
+        let p = <Self as Apply>::product(fa, fb);
+        Self::map(p, f.tupled())
     }
 }

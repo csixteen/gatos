@@ -1,58 +1,57 @@
+use std::marker::PhantomData;
+
 use crate::{
     applicative::Applicative, apply::Apply, flat_map::FlatMap, functor::Functor, hkt::HKT,
     invariant::Invariant, invariant_monoidal::InvariantMonoidal, semigroup_k::SemigroupK,
     semigroupal::Semigroupal,
 };
 
-impl<T, E> HKT for Result<T, E> {
-    type Inner = T;
+pub struct ResultK<E>(PhantomData<E>);
 
-    type Out<B> = Result<B, E>;
+impl<E> HKT for ResultK<E> {
+    type Of<A> = Result<A, E>;
 }
 
-impl<'a, T: 'a, E> Invariant<'a> for Result<T, E> {
-    fn imap<B, F, G>(self, f: F, _g: G) -> Self::Out<B>
+impl<'a, E> Invariant<'a> for ResultK<E> {
+    fn imap<A, B, F, G>(fa: Self::Of<A>, f: F, _g: G) -> Self::Of<B>
     where
-        F: Fn(Self::Inner) -> B,
-        G: Fn(B) -> Self::Inner,
+        A: 'a,
+        F: Fn(A) -> B + 'a,
+        G: Fn(B) -> A + 'a,
     {
-        self.map(f)
+        fa.map(f)
     }
 }
 
-impl<'a, T: 'a, E> Functor<'a> for Result<T, E> {
-    fn map<B, F>(self, f: F) -> <Self as HKT>::Out<B>
-    where
-        F: FnOnce(<Self as HKT>::Inner) -> B,
-    {
-        self.map(f)
+impl<E> Semigroupal for ResultK<E> {
+    fn product<A, B>(fa: Self::Of<A>, fb: Self::Of<B>) -> Self::Of<(A, B)> {
+        Ok((fa?, fb?))
     }
 }
 
-impl<T, E> Semigroupal for Result<T, E> {
-    fn product<B>(
-        self,
-        fb: <Self as HKT>::Out<B>,
-    ) -> <Self as HKT>::Out<(<Self as HKT>::Inner, B)> {
-        Ok((self?, fb?))
-    }
-}
-
-impl<'a, T: 'a, E> InvariantMonoidal<'a> for Result<T, E> {
-    fn unit() -> <Self as HKT>::Out<()> {
+impl<'a, E> InvariantMonoidal<'a> for ResultK<E> {
+    fn unit() -> Self::Of<()> {
         Ok(())
     }
 }
 
-impl<T, E> SemigroupK for Result<T, E> {
-    fn combine_k(self, b: Self) -> Self {
-        // same reason as `Option::combine_k()`
-        self.or(b)
+impl<E> SemigroupK for ResultK<E> {
+    fn combine_k<A>(a: Self::Of<A>, b: Self::Of<A>) -> Self::Of<A> {
+        a.or(b)
     }
 }
 
-impl<'a, T: 'a, E> Apply<'a> for Result<T, E> {
-    fn ap<A, B, F>(ff: <Self as HKT>::Out<F>, fa: <Self as HKT>::Out<A>) -> <Self as HKT>::Out<B>
+impl<'a, E> Functor<'a> for ResultK<E> {
+    fn map<A, B, F>(fa: Self::Of<A>, f: F) -> Self::Of<B>
+    where
+        F: FnMut(A) -> B,
+    {
+        fa.map(f)
+    }
+}
+
+impl<'a, E> Apply<'a> for ResultK<E> {
+    fn ap<A, B, F>(ff: Self::Of<F>, fa: Self::Of<A>) -> Self::Of<B>
     where
         F: FnOnce(A) -> B,
     {
@@ -60,31 +59,17 @@ impl<'a, T: 'a, E> Apply<'a> for Result<T, E> {
     }
 }
 
-impl<'a, T: 'a, E> Applicative<'a> for Result<T, E> {
-    fn pure<B>(x: B) -> <Self as HKT>::Out<B> {
-        Ok(x)
+impl<'a, E> Applicative<'a> for ResultK<E> {
+    fn pure<A>(a: A) -> Self::Of<A> {
+        Ok(a)
     }
 }
 
-impl<'a, T: 'a, E> FlatMap<'a> for Result<T, E> {
-    fn flat_map<B, F>(self, f: F) -> <Self as HKT>::Out<B>
+impl<'a, E> FlatMap<'a> for ResultK<E> {
+    fn flat_map<A, B, F>(fa: Self::Of<A>, f: F) -> Self::Of<B>
     where
-        F: Fn(<Self as HKT>::Inner) -> <Self as HKT>::Out<B>,
+        F: FnOnce(A) -> Self::Of<B>,
     {
-        self.and_then(f)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_result_apply() {
-        assert_eq!(
-            Ok(2_i32),
-            Result::<i32, ()>::ap(Ok(|x: i32| x + 1), Ok(1_i32))
-        );
-        assert_eq!(Err(()), Result::<i32, ()>::ap(Ok(|x: i32| x + 1), Err(())));
+        fa.and_then(f)
     }
 }

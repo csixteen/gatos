@@ -1,4 +1,3 @@
-pub mod algebra;
 pub mod applicative;
 pub mod apply;
 pub mod eval;

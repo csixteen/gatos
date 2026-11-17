@@ -3,56 +3,53 @@ use crate::{
     invariant_monoidal::InvariantMonoidal, semigroup_k::SemigroupK, semigroupal::Semigroupal,
 };
 
-impl<T> HKT for Vec<T> {
-    type Inner = T;
+pub struct VecK;
 
-    type Out<B> = Vec<B>;
+impl HKT for VecK {
+    type Of<A> = Vec<A>;
 }
 
-impl<'a, T: 'a> Invariant<'a> for Vec<T> {
-    fn imap<B, F, G>(self, f: F, _g: G) -> Self::Out<B>
+impl<'a> Invariant<'a> for VecK {
+    fn imap<A, B, F, G>(fa: Self::Of<A>, f: F, _g: G) -> Self::Of<B>
     where
-        F: Fn(Self::Inner) -> B,
-        G: Fn(B) -> Self::Inner,
+        A: 'a,
+        F: Fn(A) -> B + 'a,
+        G: Fn(B) -> A + 'a,
     {
-        // Just like `Option<T>`, `Vec<T>` is a covariant functor. As such, `g` is ignored.
-        self.into_iter().map(f).collect()
+        fa.into_iter().map(f).collect()
     }
 }
 
-impl<T> SemigroupK for Vec<T> {
-    fn combine_k(mut self, mut b: Self) -> Self {
-        self.append(&mut b);
-        self
+impl SemigroupK for VecK {
+    fn combine_k<A>(mut a: Self::Of<A>, mut b: Self::Of<A>) -> Self::Of<A> {
+        a.append(&mut b);
+        a
     }
 }
 
-impl<'a, T: 'a> Functor<'a> for Vec<T> {
-    fn map<B, F>(self, f: F) -> <Self as HKT>::Out<B>
-    where
-        F: FnMut(<Self as HKT>::Inner) -> B,
-    {
-        self.into_iter().map(f).collect()
+impl Semigroupal for VecK {
+    fn product<A, B>(fa: Self::Of<A>, fb: Self::Of<B>) -> Self::Of<(A, B)> {
+        fa.into_iter().zip(fb).collect()
     }
 }
 
-impl<T> Semigroupal for Vec<T> {
-    fn product<B>(
-        self,
-        fb: <Self as HKT>::Out<B>,
-    ) -> <Self as HKT>::Out<(<Self as HKT>::Inner, B)> {
-        self.into_iter().zip(fb).collect()
-    }
-}
-
-impl<'a, T: 'a> InvariantMonoidal<'a> for Vec<T> {
-    fn unit() -> <Self as HKT>::Out<()> {
+impl<'a> InvariantMonoidal<'a> for VecK {
+    fn unit() -> Self::Of<()> {
         Vec::new()
     }
 }
 
-impl<'a, T: 'a> Apply<'a> for Vec<T> {
-    fn ap<A, B, F>(ff: <Self as HKT>::Out<F>, fa: <Self as HKT>::Out<A>) -> <Self as HKT>::Out<B>
+impl<'a> Functor<'a> for VecK {
+    fn map<A, B, F>(fa: Self::Of<A>, f: F) -> Self::Of<B>
+    where
+        F: FnMut(A) -> B,
+    {
+        fa.into_iter().map(f).collect()
+    }
+}
+
+impl<'a> Apply<'a> for VecK {
+    fn ap<A, B, F>(ff: Self::Of<F>, fa: Self::Of<A>) -> Self::Of<B>
     where
         F: FnOnce(A) -> B,
     {
@@ -60,8 +57,8 @@ impl<'a, T: 'a> Apply<'a> for Vec<T> {
     }
 }
 
-impl<'a, T: 'a> Applicative<'a> for Vec<T> {
-    fn pure<B>(x: B) -> <Self as HKT>::Out<B> {
-        vec![x]
+impl<'a> Applicative<'a> for VecK {
+    fn pure<A>(a: A) -> Self::Of<A> {
+        vec![a]
     }
 }

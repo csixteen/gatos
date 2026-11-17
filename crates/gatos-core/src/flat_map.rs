@@ -1,7 +1,7 @@
 use crate::{apply::Apply, hkt::HKT};
 
 pub trait FlatMap<'a>: HKT + Apply<'a> {
-    fn flat_map<B, F>(self, f: F) -> <Self as HKT>::Out<B>
+    fn flat_map<A, B, F>(fa: Self::Of<A>, f: F) -> Self::Of<B>
     where
-        F: Fn(<Self as HKT>::Inner) -> <Self as HKT>::Out<B>;
+        F: FnOnce(A) -> Self::Of<B>;
 }

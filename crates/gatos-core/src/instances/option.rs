@@ -4,17 +4,18 @@ use crate::{
     semigroupal::Semigroupal,
 };
 
-impl<T> HKT for Option<T> {
-    type Inner = T;
+pub struct OptionK;
 
-    type Out<B> = Option<B>;
+impl HKT for OptionK {
+    type Of<A> = Option<A>;
 }
 
-impl<'a, T: 'a> Invariant<'a> for Option<T> {
-    fn imap<B, F, G>(self, f: F, _g: G) -> Self::Out<B>
+impl<'a> Invariant<'a> for OptionK {
+    fn imap<A, B, F, G>(fa: Self::Of<A>, f: F, _g: G) -> Self::Of<B>
     where
-        F: Fn(Self::Inner) -> B,
-        G: Fn(B) -> Self::Inner,
+        A: 'a,
+        F: Fn(A) -> B + 'a,
+        G: Fn(B) -> A + 'a,
     {
         // Notes for self:
         //
@@ -26,41 +27,39 @@ impl<'a, T: 'a> Invariant<'a> for Option<T> {
         //
         // `Option<T>` is already covariant, it only requires one of the transformations, which is
         // why we ignore `_g`.
-        self.map(f)
+        fa.map(f)
     }
 }
 
-impl<'a, T: 'a> Functor<'a> for Option<T> {
-    fn map<B, F>(self, f: F) -> <Self as HKT>::Out<B>
-    where
-        F: FnOnce(<Self as HKT>::Inner) -> B,
-    {
-        self.map(f)
+impl Semigroupal for OptionK {
+    fn product<A, B>(fa: Self::Of<A>, fb: Self::Of<B>) -> Self::Of<(A, B)> {
+        Some((fa?, fb?))
     }
 }
 
-impl<T> Semigroupal for Option<T> {
-    fn product<B>(self, fb: Self::Out<B>) -> Self::Out<(Self::Inner, B)> {
-        Some((self?, fb?))
-    }
-}
-
-impl<'a, T: 'a> InvariantMonoidal<'a> for Option<T> {
-    fn unit() -> <Self as HKT>::Out<()> {
+impl<'a> InvariantMonoidal<'a> for OptionK {
+    fn unit() -> Self::Of<()> {
         Some(())
     }
 }
 
-impl<T> SemigroupK for Option<T> {
-    fn combine_k(self, b: Self) -> Self {
-        // The inner type `T` of `Option<T>` is not fully specified and can be anything,
-        // therefor we don't know how to combine them, so we just use `Option::or()`.
-        self.or(b)
+impl SemigroupK for OptionK {
+    fn combine_k<A>(a: Self::Of<A>, b: Self::Of<A>) -> Self::Of<A> {
+        a.or(b)
     }
 }
 
-impl<'a, T: 'a> Apply<'a> for Option<T> {
-    fn ap<A, B, F>(ff: <Self as HKT>::Out<F>, fa: <Self as HKT>::Out<A>) -> <Self as HKT>::Out<B>
+impl<'a> Functor<'a> for OptionK {
+    fn map<A, B, F>(fa: Self::Of<A>, f: F) -> Self::Of<B>
+    where
+        F: FnMut(A) -> B,
+    {
+        fa.map(f)
+    }
+}
+
+impl<'a> Apply<'a> for OptionK {
+    fn ap<A, B, F>(ff: Self::Of<F>, fa: Self::Of<A>) -> Self::Of<B>
     where
         F: FnOnce(A) -> B,
     {
@@ -68,17 +67,17 @@ impl<'a, T: 'a> Apply<'a> for Option<T> {
     }
 }
 
-impl<'a, T: 'a> Applicative<'a> for Option<T> {
-    fn pure<B>(x: B) -> <Self as HKT>::Out<B> {
-        Some(x)
+impl<'a> Applicative<'a> for OptionK {
+    fn pure<A>(a: A) -> Self::Of<A> {
+        Some(a)
     }
 }
 
-impl<'a, T: 'a> FlatMap<'a> for Option<T> {
-    fn flat_map<B, F>(self, f: F) -> <Self as HKT>::Out<B>
+impl<'a> FlatMap<'a> for OptionK {
+    fn flat_map<A, B, F>(fa: Self::Of<A>, f: F) -> Self::Of<B>
     where
-        F: Fn(<Self as HKT>::Inner) -> <Self as HKT>::Out<B>,
+        F: FnOnce(A) -> Self::Of<B>,
     {
-        self.and_then(f)
+        fa.and_then(f)
     }
 }

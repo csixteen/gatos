@@ -4,29 +4,30 @@ use crate::hkt::HKT;
 /// given two transformations, one from `A` to `B` and another from `B` to `A`.
 pub trait Invariant<'a>: HKT {
     /// Transforms `F<A>` into `F<B>` using an isomorphism, i.e., `f: A -> B and g: B -> A`
-    fn imap<B, F, G>(self, f: F, g: G) -> Self::Out<B>
+    fn imap<A, B, F, G>(fa: Self::Of<A>, f: F, g: G) -> Self::Of<B>
     where
-        F: Fn(Self::Inner) -> B + 'a,
-        G: Fn(B) -> Self::Inner + 'a;
+        A: 'a,
+        F: Fn(A) -> B + 'a,
+        G: Fn(B) -> A + 'a;
 }
 
 #[cfg(test)]
 mod laws {
-    use std::convert::identity;
-
     use proptest::{prelude::*, test_runner::TestCaseResult};
 
-    use super::{tests::Codec, *};
+    use super::{
+        tests::{Codec, CodecK},
+        *,
+    };
 
-    fn assert_invariant_identity<'a, T, A: 'a, F>(a: T, eq: F) -> TestCaseResult
+    fn assert_invariant_identity<'a, A: 'a, F, EQ>(fa: F::Of<A>, eq: EQ) -> TestCaseResult
     where
-        T: Invariant<'a, Inner = A, Out<A> = T> + Clone,
-        F: Fn(&T, &T) -> bool,
+        F: Invariant<'a>,
+        F::Of<A>: Clone,
+        EQ: Fn(&F::Of<A>, &F::Of<A>) -> bool,
     {
-        let left = a.clone().imap(identity, identity);
-        let right = a;
-
-        prop_assert!(eq(&left, &right));
+        let mapped = F::imap(fa.clone(), |a| a, |a| a);
+        prop_assert!(eq(&mapped, &fa));
 
         Ok(())
     }
@@ -38,7 +39,7 @@ mod laws {
                     #[test]
                     fn $test_name((values, inputs) in $strategy) {
                         let a = Codec::<i32>::new();
-                        assert_invariant_identity(a, |left, right| {
+                        assert_invariant_identity::<'_, i32, CodecK<'_>, _>(a, |left, right| {
                             Codec::eq(left, right, &values, &inputs)
                         })?;
                     }
@@ -57,33 +58,36 @@ mod laws {
 
 #[cfg(test)]
 mod tests {
-    use std::{str::FromStr, sync::Arc};
+    use std::{marker::PhantomData, str::FromStr, sync::Arc};
 
     use super::*;
 
-    struct TestContainer<T>(T);
+    struct TestContainerK;
 
-    impl<T> HKT for TestContainer<T> {
-        type Inner = T;
-
-        type Out<B> = TestContainer<B>;
+    impl HKT for TestContainerK {
+        type Of<A> = TestContainer<A>;
     }
 
-    impl<'a, A> Invariant<'a> for TestContainer<A> {
-        fn imap<B, F, G>(self, f: F, _g: G) -> Self::Out<B>
+    struct TestContainer<T>(T);
+
+    impl<'a> Invariant<'a> for TestContainerK {
+        fn imap<A, B, F, G>(fa: Self::Of<A>, f: F, _g: G) -> Self::Of<B>
         where
-            F: Fn(Self::Inner) -> B,
-            G: Fn(B) -> Self::Inner,
+            F: Fn(A) -> B,
+            G: Fn(B) -> A,
         {
-            TestContainer(f(self.0))
+            TestContainer(f(fa.0))
         }
     }
 
     #[test]
     fn test_container_invariant() {
         let original = TestContainer(5_i32);
-        let transformed =
-            original.imap(|x| x.to_string(), |y| y.parse::<i32>().unwrap_or_default());
+        let transformed = TestContainerK::imap(
+            original,
+            |x| x.to_string(),
+            |y| y.parse::<i32>().unwrap_or_default(),
+        );
         assert_eq!(transformed.0, "5");
     }
 
@@ -121,20 +125,21 @@ mod tests {
         }
     }
 
-    impl<'a, A> HKT for Codec<'a, A> {
-        type Inner = A;
+    pub(super) struct CodecK<'a>(PhantomData<&'a ()>);
 
-        type Out<B> = Codec<'a, B>;
+    impl<'a> HKT for CodecK<'a> {
+        type Of<A> = Codec<'a, A>;
     }
 
-    impl<'a, A: 'a> Invariant<'a> for Codec<'a, A> {
-        fn imap<B, F, G>(self, f: F, g: G) -> Self::Out<B>
+    impl<'a> Invariant<'a> for CodecK<'a> {
+        fn imap<A, B, F, G>(fa: Self::Of<A>, f: F, g: G) -> Self::Of<B>
         where
-            F: Fn(Self::Inner) -> B + 'a,
-            G: Fn(B) -> Self::Inner + 'a,
+            A: 'a,
+            F: Fn(A) -> B + 'a,
+            G: Fn(B) -> A + 'a,
         {
-            let encode = self.encode;
-            let decode = self.decode;
+            let encode = fa.encode;
+            let decode = fa.decode;
 
             Codec {
                 encode: Arc::new(move |b| encode(g(b))),
@@ -153,7 +158,8 @@ mod tests {
         //   `int_codec.encode` (it expects an `i32`). First, we need to convert `bool` into `i32`
         //   using `g`.
         let int_codec = Codec::<i32>::new();
-        let bool_codec: Codec<'_, bool> = int_codec.imap(|n| n != 0, |b| if b { 1 } else { 0 });
+        let bool_codec: Codec<'_, bool> =
+            CodecK::imap(int_codec, |n| n != 0, |b| if b { 1 } else { 0 });
 
         assert_eq!((bool_codec.encode)(true), "1");
         assert_eq!((bool_codec.decode)("1"), Some(true));

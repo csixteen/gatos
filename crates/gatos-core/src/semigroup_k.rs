@@ -1,4 +1,4 @@
-use crate::{algebra::Algebra, hkt::HKT};
+use crate::hkt::HKT;
 
 /// Similar to [`Semigroup`], with the difference that it operates on kinds,
 /// i.e., on type constructors. It only operates on type constructors with one parameter
@@ -9,21 +9,7 @@ use crate::{algebra::Algebra, hkt::HKT};
 /// [`Semigroup`]: crate::kernel::semigroup::Semigroup
 pub trait SemigroupK: HKT {
     /// Combines two `F[_]`.
-    fn combine_k(self, b: Self) -> Self;
-
-    // Notes for self:
-    //
-    // In Scala Cats, `SemigroupK[F].algebra[A]` converts `F[A]` into a standard `Semigroup[F[A]]`.
-    // In Rust, a blanket implementation of `impl<F: SemigroupK> Semigroup for F {}` would conflict
-    // with concret `Semigroup` implementations, e.g., `Option<T>` where `T: Semigroup`. As a
-    // workaround, we can use `Algebra<T>`, which wraps `Self`, and implements `Semigroup` by
-    // delegating `combine` to `combine_k`.
-    fn algebra(self) -> Algebra<Self>
-    where
-        Self: Sized,
-    {
-        Algebra(self)
-    }
+    fn combine_k<A>(a: Self::Of<A>, b: Self::Of<A>) -> Self::Of<A>;
 }
 
 #[cfg(test)]
@@ -33,16 +19,19 @@ mod laws {
     use gatos_strategy::triple;
     use proptest::{prelude::*, test_runner::TestCaseResult};
 
+    use crate::instances::{option::OptionK, vec::VecK};
+
     use super::*;
 
-    fn assert_semigroup_k_laws<T>(a: T, b: T, c: T) -> TestCaseResult
+    fn assert_semigroup_k_laws<A, F>(a: F::Of<A>, b: F::Of<A>, c: F::Of<A>) -> TestCaseResult
     where
-        T: SemigroupK + Clone + PartialEq + Debug,
+        F: SemigroupK,
+        F::Of<A>: Clone + PartialEq + Debug,
     {
         // Associativity laws:
         // (a.combine_k(b)).combine_k(c) == a.combine_k(b.combine_k(c))
-        let left_assoc = a.clone().combine_k(b.clone()).combine_k(c.clone());
-        let right_assoc = a.combine_k(b.combine_k(c));
+        let left_assoc = F::combine_k(F::combine_k(a.clone(), b.clone()), c.clone());
+        let right_assoc = F::combine_k(a, F::combine_k(b, c));
 
         prop_assert_eq!(left_assoc, right_assoc);
 
@@ -50,12 +39,12 @@ mod laws {
     }
 
     macro_rules! semigroup_k_kaws {
-        ( $( $test_name:ident => $strategy:expr ),+ $(,)* ) => {
+        ( $( $test_name:ident => $aa:ty => $hkt:ty ),+ $(,)* ) => {
             proptest! {
                 $(
                     #[test]
-                    fn $test_name((a, b, c) in triple($strategy)) {
-                        assert_semigroup_k_laws(a, b, c)?;
+                    fn $test_name((a, b, c) in triple(any::<$aa>())) {
+                        assert_semigroup_k_laws::<_, $hkt>(a, b, c)?;
                     }
                 )+
             }
@@ -63,7 +52,7 @@ mod laws {
     }
 
     semigroup_k_kaws!(
-      option_associativity => any::<Option<i32>>(),
-      vec_associativity => any::<Vec<i32>>()
+        option_associativity => Option<i32> => OptionK,
+        vec_associativity => Vec<i32> => VecK
     );
 }

@@ -5,16 +5,16 @@ use gatos_kernel::commutative_monoid::CommutativeMonoid;
 use crate::hkt::HKT;
 
 pub trait UnorderedFoldable: HKT {
-    fn unordered_fold_map<B, F>(self, f: F) -> B
+    fn unordered_fold_map<A, B, F>(fa: Self::Of<A>, f: F) -> B
     where
         B: CommutativeMonoid,
-        F: Fn(<Self as HKT>::Inner) -> B;
+        F: Fn(A) -> B;
 
-    fn unordered_fold(self) -> <Self as HKT>::Inner
+    fn unordered_fold<A>(fa: Self::Of<A>) -> A
     where
         Self: Sized,
-        <Self as HKT>::Inner: CommutativeMonoid,
+        A: CommutativeMonoid,
     {
-        self.unordered_fold_map(identity)
+        Self::unordered_fold_map(fa, identity)
     }
 }

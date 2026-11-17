@@ -4,11 +4,11 @@ use crate::{applicative::Applicative, flat_map::FlatMap, hkt::HKT};
 //
 // NOTE: this trait won't be interesting until I implement Scala Cats' Eval.
 pub trait Monad<'a>: HKT + Applicative<'a> + FlatMap<'a> {
-    fn map<B, F>(self, f: F) -> <Self as HKT>::Out<B>
+    fn map<A, B, F>(fa: Self::Of<A>, f: F) -> Self::Of<B>
     where
         Self: Sized,
-        F: Fn(<Self as HKT>::Inner) -> B,
+        F: Fn(A) -> B,
     {
-        self.flat_map(|a| <Self as Applicative>::pure(f(a)))
+        <Self as FlatMap>::flat_map(fa, |a| <Self as Applicative>::pure(f(a)))
     }
 }

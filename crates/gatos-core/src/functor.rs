@@ -1,49 +1,49 @@
 use crate::{hkt::HKT, invariant::Invariant};
 
 pub trait Functor<'a>: HKT + Invariant<'a> {
-    fn map<B, F>(self, f: F) -> <Self as HKT>::Out<B>
+    fn map<A, B, F>(fa: Self::Of<A>, f: F) -> Self::Of<B>
     where
-        F: FnMut(<Self as HKT>::Inner) -> B;
+        F: FnMut(A) -> B;
 
-    fn imap<B, F, G>(self, f: F, _g: G) -> <Self as HKT>::Out<B>
+    fn imap<A, B, F, G>(fa: Self::Of<A>, f: F, _g: G) -> Self::Of<B>
     where
         Self: Sized,
-        F: FnMut(<Self as HKT>::Inner) -> B,
+        F: FnMut(A) -> B,
     {
-        self.map(f)
+        Self::map(fa, f)
     }
 
     /// Alias for [`Functor::map()`]
-    fn fmap<B, F>(self, f: F) -> <Self as HKT>::Out<B>
+    fn fmap<A, B, F>(fa: Self::Of<A>, f: F) -> Self::Of<B>
     where
         Self: Sized,
-        F: FnMut(<Self as HKT>::Inner) -> B,
+        F: FnMut(A) -> B,
     {
-        self.map(f)
+        Self::map(fa, f)
     }
 
     /// Lift a function `f` to operator on Functors.
-    fn lift<B, F>(f: F) -> impl FnOnce(Self) -> <Self as HKT>::Out<B>
+    fn lift<A, B, F>(f: F) -> impl FnOnce(Self::Of<A>) -> Self::Of<B>
     where
         Self: Sized,
-        F: Fn(<Self as HKT>::Inner) -> B,
+        F: Fn(A) -> B,
     {
-        move |fa: Self| fa.fmap(f)
+        move |fa| Self::fmap(fa, f)
     }
 
     /// Replaces the `A` value in `F[A]` with the supplied value.
-    fn r#as<B>(self, b: B) -> <Self as HKT>::Out<B>
+    fn r#as<A, B>(fa: Self::Of<A>, b: B) -> Self::Of<B>
     where
         B: Clone,
         Self: Sized,
     {
-        self.map(|_| b.clone())
+        Self::map(fa, |_| b.clone())
     }
 
-    fn void(self) -> <Self as HKT>::Out<()>
+    fn void<A>(fa: Self::Of<A>) -> Self::Of<()>
     where
         Self: Sized,
     {
-        self.r#as(())
+        Self::r#as(fa, ())
     }
 }
