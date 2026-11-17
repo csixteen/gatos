@@ -9,6 +9,6 @@ pub trait Monad<'a>: HKT + Applicative<'a> + FlatMap<'a> {
         Self: Sized,
         F: Fn(A) -> B,
     {
-        <Self as FlatMap>::flat_map(fa, |a| <Self as Applicative>::pure(f(a)))
+        Self::flat_map(fa, |a| Self::pure(f(a)))
     }
 }
