@@ -9,15 +9,4 @@ where
     }
 }
 
-impl<T> CommutativeSemigroup for Reverse<T>
-where
-    T: CommutativeSemigroup,
-{
-    fn combine_n(self, n: std::num::NonZeroUsize) -> Self
-    where
-        Self: Clone,
-    {
-        // TODO: confirm if this is correct
-        <Self as Semigroup>::combine_n(self, n)
-    }
-}
+impl<T> CommutativeSemigroup for Reverse<T> where T: CommutativeSemigroup {}

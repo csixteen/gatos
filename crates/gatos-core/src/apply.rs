@@ -1,5 +1,6 @@
-use crate::{functor::Functor, hkt::HKT, invariant_semigroupal::InvariantSemigroupal};
 use gatos_prim::function::TupledFunction2;
+
+use crate::{functor::Functor, hkt::HKT, invariant_semigroupal::InvariantSemigroupal};
 
 pub trait Apply<'a>: HKT + Functor<'a> + InvariantSemigroupal<'a> {
     /// This is the equivalent of Haskell's `<*>`, whose signature is:
