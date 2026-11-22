@@ -32,6 +32,10 @@ pub trait SemigroupK: HKT {
             _repeated::<A, Self>(a.clone(), usize::from(n).saturating_sub(1), a)
         }
     }
+
+    fn combine_all_option_k<A>(xs: impl Iterator<Item = Self::Of<A>>) -> Option<Self::Of<A>> {
+        xs.reduce(Self::combine_k)
+    }
 }
 
 #[inline]
