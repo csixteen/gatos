@@ -1,3 +1,5 @@
+use std::num::NonZeroUsize;
+
 use crate::hkt::HKT;
 
 /// Similar to [`Semigroup`], with the difference that it operates on kinds,
@@ -10,6 +12,36 @@ use crate::hkt::HKT;
 pub trait SemigroupK: HKT {
     /// Combines two `F[_]`.
     fn combine_k<A>(a: Self::Of<A>, b: Self::Of<A>) -> Self::Of<A>;
+
+    fn repeated_combine_n_k<A, B>(a: Self::Of<A>, n: NonZeroUsize) -> Self::Of<A>
+    where
+        Self: Sized,
+        Self::Of<A>: SemigroupK + Clone,
+    {
+        if usize::from(n) == 1_usize {
+            a
+        } else {
+            _repeated::<A, Self>(a.clone(), usize::from(n).saturating_sub(1), a)
+        }
+    }
+}
+
+#[inline]
+fn _repeated<A, T>(a: T::Of<A>, n: usize, acc: T::Of<A>) -> T::Of<A>
+where
+    T::Of<A>: Clone,
+    T: SemigroupK + HKT,
+{
+    if n == 1 {
+        T::combine_k(a, acc)
+    } else {
+        let x = if (n & 1) == 1 {
+            T::combine_k(a.clone(), acc)
+        } else {
+            acc
+        };
+        _repeated::<A, T>(T::combine_k(a.clone(), a), n >> 1, x)
+    }
 }
 
 #[cfg(test)]
@@ -19,9 +51,8 @@ mod laws {
     use gatos_strategy::triple;
     use proptest::{prelude::*, test_runner::TestCaseResult};
 
-    use crate::instances::{option::OptionK, vec::VecK};
-
     use super::*;
+    use crate::instances::{option::OptionK, vec::VecK};
 
     fn assert_semigroup_k_laws<A, F>(a: F::Of<A>, b: F::Of<A>, c: F::Of<A>) -> TestCaseResult
     where

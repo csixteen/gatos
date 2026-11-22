@@ -34,15 +34,28 @@ pub trait Semigroup: Sized {
         Self: Clone,
     {
         #[inline]
-        fn _repeated<T: Semigroup + Clone>(y: T, k: usize, acc: T) -> T {
+        fn _repeat<A>(a: A, k: usize, acc: A) -> A
+        where
+            A: Semigroup + Clone,
+        {
             if k == 1 {
-                acc
+                A::combine(a, acc)
             } else {
-                _repeated(y.clone(), k - 1, acc.combine(y))
+                let x = if (k & 1) == 1 {
+                    A::combine(a.clone(), acc)
+                } else {
+                    acc
+                };
+
+                _repeat(A::combine(a.clone(), a), k >> 1, x)
             }
         }
 
-        _repeated(self.clone(), n.into(), self)
+        if usize::from(n) == 1 {
+            self
+        } else {
+            _repeat(self.clone(), usize::from(n).saturating_sub(1), self)
+        }
     }
 
     fn reverse(self) -> Reverse<Self> {
