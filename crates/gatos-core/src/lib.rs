@@ -10,6 +10,7 @@ pub mod invariant_monoidal;
 pub mod invariant_semigroupal;
 pub mod monad;
 pub mod monoid_k;
+pub mod non_empty_alternative;
 pub mod semigroup_k;
 pub mod semigroupal;
 pub mod unordered_foldable;
