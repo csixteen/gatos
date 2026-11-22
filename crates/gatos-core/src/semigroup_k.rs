@@ -13,10 +13,18 @@ pub trait SemigroupK: HKT {
     /// Combines two `F[_]`.
     fn combine_k<A>(a: Self::Of<A>, b: Self::Of<A>) -> Self::Of<A>;
 
-    fn repeated_combine_n_k<A, B>(a: Self::Of<A>, n: NonZeroUsize) -> Self::Of<A>
+    fn combine_n_k<A>(a: Self::Of<A>, n: NonZeroUsize) -> Self::Of<A>
     where
         Self: Sized,
-        Self::Of<A>: SemigroupK + Clone,
+        Self::Of<A>: Clone,
+    {
+        Self::repeated_combine_n_k(a, n)
+    }
+
+    fn repeated_combine_n_k<A>(a: Self::Of<A>, n: NonZeroUsize) -> Self::Of<A>
+    where
+        Self: Sized,
+        Self::Of<A>: Clone,
     {
         if usize::from(n) == 1_usize {
             a
