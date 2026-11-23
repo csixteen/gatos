@@ -5,7 +5,6 @@ pub mod numbers;
 pub mod option;
 pub mod result;
 pub mod reverse;
-pub mod semigroup;
 pub mod set;
 pub mod string;
 pub mod tuple;

@@ -33,3 +33,13 @@ macro_rules! impl_tuples {
 // impl_tuples!(A 0, B 1, C 2, ...)
 // ```
 impl_tuples!((A a1 a2) (B b1 b2) (C c1 c2) (D d1 d2) (E e1 e2) (F f1 f2) (G g1 g2));
+
+// 0-tuple, or unit type
+
+impl Semigroup for () {
+    fn combine(self, _: Self) -> Self {}
+}
+
+impl Monoid for () {
+    fn empty() -> Self {}
+}
