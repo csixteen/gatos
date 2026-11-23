@@ -155,6 +155,6 @@ pub trait Foldable: HKT + UnorderedFoldable {
         F: Fn(A) -> G::Of<B>,
         G: Applicative<'a>,
     {
-        Self::to_iter(fa).fold(G::pure(B::empty()), |acc, a| G::map2(f(a), acc, B::combine))
+        Self::to_iter(fa).fold(G::pure(B::empty()), |acc, a| G::map2(acc, f(a), B::combine))
     }
 }

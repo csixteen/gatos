@@ -133,5 +133,6 @@ mod tests {
             Some("world!".to_string()),
         ];
         let result = VecK::fold_a::<_, OptionK>(values);
+        assert_eq!(result, Some("hello, world!".to_string()));
     }
 }
