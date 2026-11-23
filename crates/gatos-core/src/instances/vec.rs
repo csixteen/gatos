@@ -119,3 +119,19 @@ impl Foldable for VecK {
         fa.into_iter()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::instances::option::OptionK;
+
+    #[test]
+    fn test_vec_fold_a() {
+        let values = vec![
+            Some("hello".to_string()),
+            Some(", ".to_string()),
+            Some("world!".to_string()),
+        ];
+        let result = VecK::fold_a::<_, OptionK>(values);
+    }
+}

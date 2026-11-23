@@ -4,8 +4,8 @@ impl<T> Semigroup for Reverse<T>
 where
     T: Semigroup,
 {
-    fn combine(self, right: impl Into<Self>) -> Self {
-        Reverse::new(T::combine(right.into().into_inner(), self.into_inner()))
+    fn combine(self, right: Self) -> Self {
+        Reverse::new(T::combine(right.into_inner(), self.into_inner()))
     }
 }
 

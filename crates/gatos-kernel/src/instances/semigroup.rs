@@ -6,19 +6,19 @@ use std::{
 use crate::semigroup::Semigroup;
 
 impl Semigroup for () {
-    fn combine(self, _: impl Into<Self>) -> Self {}
+    fn combine(self, _: Self) -> Self {}
 }
 
 impl Semigroup for String {
-    fn combine(mut self, right: impl Into<Self>) -> Self {
-        self.push_str(&right.into());
+    fn combine(mut self, right: Self) -> Self {
+        self.push_str(&right);
         self
     }
 }
 
 impl<T> Semigroup for Vec<T> {
-    fn combine(mut self, right: impl Into<Vec<T>>) -> Vec<T> {
-        self.append(&mut right.into());
+    fn combine(mut self, mut right: Self) -> Vec<T> {
+        self.append(&mut right);
         self
     }
 }
@@ -27,8 +27,8 @@ impl<T> Semigroup for HashSet<T>
 where
     T: Eq + Hash,
 {
-    fn combine(mut self, right: impl Into<Self>) -> Self {
-        self.extend(right.into());
+    fn combine(mut self, right: Self) -> Self {
+        self.extend(right);
         self
     }
 }
@@ -37,8 +37,8 @@ impl<K, V> Semigroup for HashMap<K, V>
 where
     K: Eq + Hash,
 {
-    fn combine(mut self, right: impl Into<Self>) -> Self {
-        self.extend(right.into());
+    fn combine(mut self, right: Self) -> Self {
+        self.extend(right);
         self
     }
 }
@@ -47,8 +47,8 @@ impl<T: Semigroup> Semigroup for Option<T>
 where
     T: Semigroup,
 {
-    fn combine(self, right: impl Into<Self>) -> Self {
-        match (self, right.into()) {
+    fn combine(self, right: Self) -> Self {
+        match (self, right) {
             (None, None) => None,
             (a @ Some(_), None) => a,
             (None, b @ Some(_)) => b,
@@ -61,8 +61,8 @@ impl<T: Semigroup, E> Semigroup for Result<T, E>
 where
     T: Semigroup,
 {
-    fn combine(self, right: impl Into<Self>) -> Self {
-        match (self, right.into()) {
+    fn combine(self, right: Self) -> Self {
+        match (self, right) {
             (_, b @ Err(_)) => b,
             (a @ Err(_), _) => a,
             (Ok(a), Ok(b)) => Ok(a.combine(b)),
@@ -71,21 +71,21 @@ where
 }
 
 impl Semigroup for f32 {
-    fn combine(self, right: impl Into<Self>) -> Self {
-        self + right.into()
+    fn combine(self, right: Self) -> Self {
+        self + right
     }
 }
 
 impl Semigroup for f64 {
-    fn combine(self, right: impl Into<Self>) -> Self {
-        self + right.into()
+    fn combine(self, right: Self) -> Self {
+        self + right
     }
 }
 
 macro_rules! semigroup_impl {
     ($($type:ty),*) => {$(
         impl Semigroup for $type {
-            fn combine(self, right: impl Into<$type>) -> $type {
+            fn combine(self, right: $type) -> $type {
                 self.wrapping_add(right.into())
             }
         }

@@ -4,7 +4,7 @@ use crate::{intercalate::Intercalate, reverse::Reverse};
 
 /// A semigroup is a set with an associative operator that combines two elements from the set.
 pub trait Semigroup: Sized {
-    fn combine(self, right: impl Into<Self>) -> Self;
+    fn combine(self, right: Self) -> Self;
 
     fn combine_n(self, n: NonZeroUsize) -> Self
     where

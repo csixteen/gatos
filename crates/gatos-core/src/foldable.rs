@@ -8,7 +8,10 @@ use gatos_kernel::monoid::Monoid;
 use gatos_prim::either::Either;
 use num::Zero;
 
-use crate::{hkt::HKT, monad::Monad, unordered_foldable::UnorderedFoldable};
+use crate::{
+    applicative::Applicative, hkt::HKT, monad::Monad, monoid_k::MonoidK,
+    unordered_foldable::UnorderedFoldable,
+};
 
 pub trait Foldable: HKT + UnorderedFoldable {
     // Scala Cats uses `Eval` and `Source.fromFoldable`. Trying to implement those types and
@@ -124,5 +127,34 @@ pub trait Foldable: HKT + UnorderedFoldable {
             Some(a) => <M as Monad>::map(f(acc, a), Either::Left),
             None => todo!(),
         })
+    }
+
+    /// Fold implemented by mapping `A` values into `B`, in a context `G`, and then
+    /// combining them using the `MonoidK<G>` instance.
+    fn fold_map_k<A, B, F, G>(fa: Self::Of<A>, f: F) -> G::Of<B>
+    where
+        G: MonoidK,
+        F: Fn(A) -> G::Of<B>,
+    {
+        Self::to_iter(fa).fold(G::empty(), |acc, a| G::combine_k(acc, f(a)))
+    }
+
+    fn fold_a<'a, A, G>(fga: Self::Of<G::Of<A>>) -> G::Of<A>
+    where
+        A: Monoid,
+        G: Applicative<'a> + HKT,
+    {
+        Self::fold_map_a::<G::Of<A>, A, _, G>(fga, identity)
+    }
+
+    /// Fold in an [`Applicative`] context by mapping the `A` values to `G<B>`, combining the `B`
+    /// values using the given [`Monoid`] instance.
+    fn fold_map_a<'a, A, B, F, G>(fa: Self::Of<A>, f: F) -> G::Of<B>
+    where
+        B: Monoid,
+        F: Fn(A) -> G::Of<B>,
+        G: Applicative<'a>,
+    {
+        Self::to_iter(fa).fold(G::pure(B::empty()), |acc, a| G::map2(f(a), acc, B::combine))
     }
 }

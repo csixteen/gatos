@@ -31,7 +31,7 @@ mod tests {
         let rev = "Hello"
             .to_string()
             .reverse()
-            .combine(", world!".to_string());
+            .combine(", world!".to_string().into());
         assert_eq!(normal, rev.into_inner());
     }
 }
