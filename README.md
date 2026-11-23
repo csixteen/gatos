@@ -8,8 +8,11 @@ This is highly experimental, a little playground to learn more about Category Th
 
 | Type Class | Implemented | Laws tested |
 |------------|-------------|-------------|
-| CommutativeMonoid | :construction: | :x: |
-| CommutativeSemigroup | :construction: | :x: |
+| CommutativeMonoid | :white_check_mark: | :x: |
+| CommutativeSemigroup | :white_check_mark: | :x: |
 | Group | :white_check_mark: | :white_check_mark: |
+| Invariant | :white_check_mark: | :white_check_mark: |
+| InvariantSemigroupal | :white_check_mark: | :x: |
 | Monoid | :white_check_mark: | :white_check_mark: |
 | Semigroup | :white_check_mark: | :white_check_mark: |
+| Semigroupal | :white_check_mark: | :x: |

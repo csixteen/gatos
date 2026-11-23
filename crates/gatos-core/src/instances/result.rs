@@ -1,9 +1,18 @@
 use std::marker::PhantomData;
 
 use crate::{
-    applicative::Applicative, apply::Apply, flat_map::FlatMap, foldable::Foldable,
-    functor::Functor, hkt::HKT, invariant::Invariant, invariant_monoidal::InvariantMonoidal,
-    semigroup_k::SemigroupK, semigroupal::Semigroupal, unordered_foldable::UnorderedFoldable,
+    applicative::Applicative,
+    apply::Apply,
+    bifoldable::Bifoldable,
+    flat_map::FlatMap,
+    foldable::Foldable,
+    functor::Functor,
+    hkt::{HKT, HKT2},
+    invariant::Invariant,
+    invariant_monoidal::InvariantMonoidal,
+    semigroup_k::SemigroupK,
+    semigroupal::Semigroupal,
+    unordered_foldable::UnorderedFoldable,
 };
 
 pub struct ResultK<E>(PhantomData<E>);
@@ -107,5 +116,35 @@ impl<E> Foldable for ResultK<E> {
 
     fn to_iter<A>(fa: Self::Of<A>) -> Self::Iter<A> {
         fa.into_iter()
+    }
+}
+
+pub struct ResultK2;
+
+impl HKT2 for ResultK2 {
+    type Of<A, B> = Result<A, B>;
+}
+
+impl Bifoldable for ResultK2 {
+    fn bifold_left<A, B, C, F, G>(fab: Self::Of<A, B>, c: C, f: F, g: G) -> C
+    where
+        F: Fn(C, A) -> C,
+        G: Fn(C, B) -> C,
+    {
+        match fab {
+            Ok(a) => f(c, a),
+            Err(b) => g(c, b),
+        }
+    }
+
+    fn bifold_right<A, B, C, F, G>(fab: Self::Of<A, B>, c: C, f: F, g: G) -> C
+    where
+        F: Fn(A, C) -> C,
+        G: Fn(B, C) -> C,
+    {
+        match fab {
+            Ok(a) => f(a, c),
+            Err(b) => g(b, c),
+        }
     }
 }

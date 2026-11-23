@@ -82,6 +82,15 @@ impl Semigroup for f64 {
     }
 }
 
+impl<T> Semigroup for (T, T)
+where
+    T: Semigroup,
+{
+    fn combine(self, right: Self) -> Self {
+        (self.0.combine(right.0), self.1.combine(right.1))
+    }
+}
+
 macro_rules! semigroup_impl {
     ($($type:ty),*) => {$(
         impl Semigroup for $type {
