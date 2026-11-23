@@ -1,6 +1,12 @@
 pub mod commutative_semigroup;
-pub mod group;
 pub mod intercalate;
-pub mod monoid;
+pub mod map;
+pub mod numbers;
+pub mod option;
+pub mod result;
 pub mod reverse;
 pub mod semigroup;
+pub mod set;
+pub mod string;
+pub mod tuple;
+pub mod vec;
