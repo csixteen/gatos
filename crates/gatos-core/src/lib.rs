@@ -1,6 +1,7 @@
 pub mod applicative;
 pub mod apply;
 pub mod bifoldable;
+pub mod bifunctor;
 pub mod flat_map;
 pub mod foldable;
 pub mod functor;
