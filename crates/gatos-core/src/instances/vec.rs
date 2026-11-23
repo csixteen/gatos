@@ -1,7 +1,9 @@
 use crate::{
-    applicative::Applicative, apply::Apply, flat_map::FlatMap, foldable::Foldable,
-    functor::Functor, hkt::HKT, invariant::Invariant, invariant_monoidal::InvariantMonoidal,
-    semigroup_k::SemigroupK, semigroupal::Semigroupal, unordered_foldable::UnorderedFoldable,
+    alternative::Alternative, applicative::Applicative, apply::Apply, flat_map::FlatMap,
+    foldable::Foldable, functor::Functor, hkt::HKT, invariant::Invariant,
+    invariant_monoidal::InvariantMonoidal, monoid_k::MonoidK,
+    non_empty_alternative::NonEmptyAlternative, semigroup_k::SemigroupK, semigroupal::Semigroupal,
+    unordered_foldable::UnorderedFoldable,
 };
 
 pub struct VecK;
@@ -18,6 +20,12 @@ impl<'a> Invariant<'a> for VecK {
         G: Fn(B) -> A + 'a,
     {
         fa.into_iter().map(f).collect()
+    }
+}
+
+impl MonoidK for VecK {
+    fn empty<A>() -> Self::Of<A> {
+        Vec::new()
     }
 }
 
@@ -120,6 +128,10 @@ impl Foldable for VecK {
     }
 }
 
+impl<'a> Alternative<'a> for VecK {}
+
+impl<'a> NonEmptyAlternative<'a> for VecK {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -134,5 +146,12 @@ mod tests {
         ];
         let result = VecK::fold_a::<_, OptionK>(values);
         assert_eq!(result, Some("hello, world!".to_string()));
+    }
+
+    #[test]
+    fn test_vec_unite() {
+        let values = vec![vec![1, 2], vec![3, 4]];
+        let result = VecK::unite::<_, VecK>(values);
+        assert_eq!(result, vec![1, 2, 3, 4]);
     }
 }

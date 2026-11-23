@@ -1,3 +1,4 @@
+pub mod alternative;
 pub mod applicative;
 pub mod apply;
 pub mod bifoldable;
