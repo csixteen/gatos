@@ -16,7 +16,7 @@ pub trait Monad<'a>: HKT + Applicative<'a> + FlatMap<'a> {
     }
 
     /// Executes an action repeatedly as long as the given `bool` expression returns `true`.
-    /// Collects the results into an arbitrary `Alternative` value, such as a `Vec`.
+    /// Collects the results into an arbitrary [`Alternative`] value, such as a `Vec`.
     fn while_m<A, F, G>(p: Self::Of<bool>, body: F) -> Self::Of<G::Of<A>>
     where
         Self::Of<bool>: Clone, // does this make sense? Need to try it out
@@ -47,6 +47,26 @@ pub trait Monad<'a>: HKT + Applicative<'a> + FlatMap<'a> {
                 p.clone(),
                 || Self::r#as(body(), Left(())),
                 || Self::pure(Right(())),
+            )
+        })
+    }
+
+    /// Executes an action repeatedly until `cond` returns `true`.
+    /// Collects results into an arbitrary [`Alternative`], such as `Vec`.
+    // NOTE: ugh, this looks ugly..
+    fn until_m<A, G, P>(f: Self::Of<A>, cond: P) -> Self::Of<G::Of<A>>
+    where
+        Self::Of<A>: Clone,
+        Self::Of<bool>: Clone,
+        A: Clone,
+        G: Alternative<'a>,
+        G::Of<A>: Clone,
+        P: Fn() -> Self::Of<bool>,
+    {
+        Self::flat_map(f.clone(), |x| {
+            <Self as Functor>::map(
+                Self::while_m::<_, _, G>(<Self as Functor>::map(cond(), |x| !x), || f.clone()),
+                |xs| G::prepend_k(x.clone(), xs),
             )
         })
     }
